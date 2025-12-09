@@ -1,0 +1,25 @@
+/* 전체 화면 가운데 배치 */
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #000; /* 검정 바탕 */
+}
+
+/* iPhone 화면 크기와 동일한 틀 */
+.screen {
+  position: relative;
+  width: 375px;   /* iPhone 화면 너비 */
+  height: 812px;  /* iPhone 화면 높이 */
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 32px; /* 모서리 둥글게 */
+}
+
+/* 시작 이미지 */
+.start-screen {
+  background-image: url("start.png"); /* 업로드한 이미지 이름 */
+}
