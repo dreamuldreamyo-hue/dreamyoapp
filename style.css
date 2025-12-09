@@ -1,0 +1,110 @@
+/* 전체 기본 설정 */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f7;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* 공통 화면 틀 (아이폰 화면 느낌) */
+.screen {
+  width: 375px;
+  min-height: 812px;
+  background: #ffffff;
+  border-radius: 28px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  padding: 72px 24px 32px; /* 위에 상태바 여백 포함 */
+  position: relative;
+}
+
+/* 로고 텍스트 대신: 나중에 img로 바꿔도 됨 */
+.logo {
+  font-size: 40px;
+  font-weight: 800;
+  color: #3e63ff; /* Dreamyo 파란색 느낌 */
+  margin-bottom: 8px;
+}
+
+/* 상단 설명 텍스트 */
+.subtitle {
+  font-size: 16px;
+  color: #666666;
+  margin-bottom: 32px;
+}
+
+/* 가운데 정렬 전용 */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* 인풋 그룹 */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  font-size: 13px;
+  color: #444444;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
+}
+
+/* 버튼 */
+.btn-primary {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: 12px;
+  border: none;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* 아래쪽 작은 텍스트 */
+.text-small {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666666;
+  text-align: center;
+}
+
+.text-link {
+  color: #3e63ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* 회원가입 화면 상단 뒤로가기 화살표 */
+.back {
+  position: absolute;
+  left: 16px;
+  top: 40px;
+  font-size: 20px;
+  text-decoration: none;
+  color: #333333;
+}
