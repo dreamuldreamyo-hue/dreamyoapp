@@ -2,21 +2,22 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Dreamyo 시작화면 테스트</title>
+  <title>Dreamyo - 시작 화면</title>
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    // 2초 뒤 로그인 페이지로 이동
+    window.addEventListener("load", () => {
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+    });
+  </script>
 </head>
-<body style="
-  margin: 0;
-  background: #000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-">
-  <!-- 여기 이미지 이름을 네 파일 이름으로 바꾸면 됨 -->
-  <img src="start.png" alt="시작화면" style="
-    width: 375px;
-    height: auto;
-    border-radius: 32px;
-  ">
+<body>
+  <div class="screen center">
+    <p class="subtitle">꿈을 꾸는 아이들에게 드림요</p>
+    <div class="logo">Dreamyo</div>
+  </div>
 </body>
 </html>
+
