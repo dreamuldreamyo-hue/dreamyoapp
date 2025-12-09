@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dreamyo - 회원가입</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="screen">
+
+    <!-- 뒤로가기 (로그인으로) -->
+    <a href="login.html" class="back">←</a>
+
+    <div class="center" style="margin-bottom: 32px;">
+      <div class="logo">Dreamyo</div>
+      <p class="subtitle" style="margin-top: 8px;">
+        아이들을 위한 따뜻한 나눔에 함께해 주세요
+      </p>
+    </div>
+
+    <form id="signup-form">
+      <div class="form-group">
+        <label class="form-label" for="name">이름</label>
+        <input
+          id="name"
+          name="name"
+          type="text"
+          class="form-input"
+          placeholder="이름을 입력해주세요"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">이메일</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          class="form-input"
+          placeholder="이메일을 입력해주세요"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">비밀번호</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          class="form-input"
+          placeholder="비밀번호를 입력해주세요"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password-confirm">비밀번호 확인</label>
+        <input
+          id="password-confirm"
+          name="password-confirm"
+          type="password"
+          class="form-input"
+          placeholder="비밀번호를 한 번 더 입력해주세요"
+          required
+        />
+      </div>
+
+      <button type="submit" class="btn-primary">회원가입</button>
+    </form>
+
+    <script>
+      document.getElementById("signup-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById("name").value;
+        const email = document.getElementById("email").value;
+        const pw = document.getElementById("password").value;
+        const pw2 = document.getElementById("password-confirm").value;
+
+        if (pw !== pw2) {
+          alert("비밀번호가 서로 다릅니다. 다시 확인해주세요!");
+          return;
+        }
+
+        // 여기서 실제로는 서버로 보내야 하지만,
+        // 지금은 데모니까 안내만 해줄게
+        alert(
+          "회원가입 정보가 입력되었습니다. (데모)\n\n" +
+          "이름: " + name + "\n" +
+          "이메일: " + email
+        );
+
+        // 회원가입 완료 후 로그인 화면으로 이동
+        window.location.href = "login.html";
+      });
+    </script>
+  </div>
+</body>
+</html>
