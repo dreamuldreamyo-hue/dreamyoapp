@@ -16,7 +16,7 @@
 
     <!-- 채팅 영역 -->
     <main class="chat-body" id="chat-body">
-      <!-- 1. 첫 번째 봇 메시지 -->
+      <!-- 처음에 보이는 봇 인사말 -->
       <div class="chat-row bot">
         <div class="chat-bubble">
           안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
@@ -26,31 +26,6 @@
           보유 포인트를 입력해 주세요!
         </div>
       </div>
-
-      <!-- 2. 예시 사용자 말풍선 -->
-      <div class="chat-row user">
-        <div class="chat-bubble">
-          내 마일리지는 5,000포인트야.
-        </div>
-      </div>
-
-      <!-- 3. 추천 결과 봇 말풍선 (카드 스타일) -->
-      <div class="chat-row bot">
-        <div class="chat-bubble chat-bubble-card">
-          현재 5,000포인트로 기부 가능한 품목이에요.<br /><br />
-          • [생필품] GS25 좋은느낌 (4,000P)<br />
-          • [음료] 이디야커피 카페모카 R (3,500P)<br />
-          • [음료] 더벤티 아메리카노 (3,500P)<br /><br />
-          원하는 품목을 골라 아이들에게 따뜻한 응원을<br />
-          전해볼까요? 😊
-        </div>
-      </div>
-
-      <!-- 4. 추천 결과 아래 버튼 두 개 -->
-      <div class="chat-actions">
-        <button class="chat-action-button">기부하기</button>
-        <button class="chat-action-button chat-action-sub">종료하기</button>
-      </div>
     </main>
 
     <!-- 하단 입력창 -->
@@ -59,7 +34,7 @@
         type="text"
         id="chat-input"
         class="chat-input"
-        placeholder="보유 마일리지를 입력하세요 (예: 3500)"
+        placeholder="보유 마일리지를 입력하세요 (예: 5000)"
         autocomplete="off"
       />
       <button type="submit" class="chat-send-button">전송</button>
@@ -71,6 +46,9 @@
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
+    let actionsShown = false; // 기부하기/종료하기 버튼이 이미 만들어졌는지 여부
+
+    // 기본 말풍선 추가
     function addBubble(text, type) {
       const row = document.createElement("div");
       row.className = "chat-row " + type;
@@ -81,23 +59,65 @@
 
       row.appendChild(bubble);
       chatBody.appendChild(row);
+
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function getDemoReply(message) {
-      const num = message.match(/\d+/g);
-      if (num) {
-        const point = num[0];
-        return (
-          `입력해 주신 포인트는 <b>${point}포인트</b>네요!<br><br>` +
-          `이 포인트로 기부할 수 있는 예시 품목들이에요.<br><br>` +
-          `• [생필품] GS25 좋은느낌 (4,000P)<br>` +
-          `• [음료] 이디야커피 카페모카 R (3,500P)<br>` +
-          `• [음료] 더벤티 아메리카노 (3,500P)<br><br>` +
-          `원하는 품목을 골라 아이들에게 응원을 전해볼까요? 😊`
-        );
-      }
-      return "보유 마일리지를 숫자로 입력해 주면, 기부 가능한 품목을 추천해드릴게요! 예: 3500";
+    // 추천 카드 스타일 말풍선 추가
+    function addCardBubble(text) {
+      const row = document.createElement("div");
+      row.className = "chat-row bot";
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble chat-bubble-card";
+      bubble.innerHTML = text.replace(/\n/g, "<br />");
+
+      row.appendChild(bubble);
+      chatBody.appendChild(row);
+
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // 기부하기 / 종료하기 버튼 영역 추가
+    function showActions() {
+      if (actionsShown) return;
+      actionsShown = true;
+
+      const actions = document.createElement("div");
+      actions.className = "chat-actions";
+
+      const donateBtn = document.createElement("button");
+      donateBtn.className = "chat-action-button";
+      donateBtn.textContent = "기부하기";
+      // 나중에 여기서 결제/기부 화면으로 이동하게 만들 수 있음
+      donateBtn.onclick = () => {
+        alert("해커톤 데모용: 기부하기 버튼이 눌렸어요! (여기서 결제 화면으로 이동)");
+      };
+
+      const endBtn = document.createElement("button");
+      endBtn.className = "chat-action-button chat-action-sub";
+      endBtn.textContent = "종료하기";
+      endBtn.onclick = () => {
+        // 일단은 홈으로 돌아가기
+        window.location.href = "home.html";
+      };
+
+      actions.appendChild(donateBtn);
+      actions.appendChild(endBtn);
+
+      chatBody.appendChild(actions);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // 포인트에 따라 봇 답장 텍스트 만들기
+    function getDemoReply(point) {
+      return (
+        `현재 <b>${point}포인트</b>로 기부 가능한 품목이에요.<br><br>` +
+        `• [생필품] GS25 좋은느낌 (4,000P)<br>` +
+        `• [음료] 이디야커피 카페모카 R (3,500P)<br>` +
+        `• [음료] 더벤티 아메리카노 (3,500P)<br><br>` +
+        `원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
+      );
     }
 
     chatForm.addEventListener("submit", function (e) {
@@ -105,13 +125,30 @@
       const text = chatInput.value.trim();
       if (!text) return;
 
+      // 사용자 말풍선 추가
       addBubble(text, "user");
       chatInput.value = "";
 
+      // 숫자(포인트) 추출
+      const num = text.match(/\d+/g);
+      if (!num) {
+        setTimeout(() => {
+          addBubble(
+            "보유 마일리지를 숫자로 입력해 주면, 기부 가능한 품목을 추천해드릴게요! 예: 5000",
+            "bot"
+          );
+        }, 500);
+        return;
+      }
+
+      const point = num[0];
+
+      // 추천 카드 + 버튼은 약간 딜레이 후 등장
       setTimeout(() => {
-        const reply = getDemoReply(text);
-        addBubble(reply, "bot");
-      }, 700);
+        const reply = getDemoReply(point);
+        addCardBubble(reply);  // 카드형 말풍선
+        showActions();         // 버튼 두 개 생성
+      }, 600);
     });
   </script>
 </body>
