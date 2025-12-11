@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dreamyo - 홈</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="screen screen-home">
+
+    <!-- 상단: 로고 + 지금까지 사준 금액 -->
+    <header class="home-header">
+      <div class="home-logo-row">
+        <div class="logo-mark">Dreamo</div>
+        <!-- 오른쪽 아이콘 자리 (알림, 설정 등 필요하면 나중에) -->
+        <!-- <button class="icon-button">🔔</button> -->
+      </div>
+
+      <p class="home-balance-label">지금까지 사준 금액</p>
+      <div class="home-balance-row">
+        <div class="home-balance-amount">165,000 원</div>
+        <button class="home-badge-button">세부내역</button>
+      </div>
+    </header>
+
+    <main class="home-main">
+
+      <!-- 섹션 1: 최근 사주세요 (가로 스크롤 카드) -->
+      <section class="home-section">
+        <div class="section-header">
+          <h2 class="section-title">최근 사주세요</h2>
+          <button class="section-arrow">›</button>
+        </div>
+
+        <div class="horizontal-scroll">
+          <article class="menu-card">
+            <div class="menu-thumb">사진</div>
+            <div class="menu-name">동네떡볶이(계란)</div>
+            <div class="menu-price">5,900원</div>
+          </article>
+
+          <article class="menu-card">
+            <div class="menu-thumb">사진</div>
+            <div class="menu-name">이디야 카페모카 R</div>
+            <div class="menu-price">3,500원</div>
+          </article>
+
+          <article class="menu-card">
+            <div class="menu-thumb">사진</div>
+            <div class="menu-name">햄버거 세트</div>
+            <div class="menu-price">6,700원</div>
+          </article>
+
+          <article class="menu-card">
+            <div class="menu-thumb">사진</div>
+            <div class="menu-name">케이크 한 조각</div>
+            <div class="menu-price">4,800원</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 섹션 2: 사줄게요 (지도 박스) -->
+      <section class="home-section">
+        <div class="section-header">
+          <h2 class="section-title">사줄게요</h2>
+          <button class="section-arrow">›</button>
+        </div>
+
+        <div class="map-card">
+          <div class="map-thumb">지도 자리</div>
+        </div>
+      </section>
+
+      <!-- 섹션 3: 따뜻한 뉴스 (가로 스크롤 카드) -->
+      <section class="home-section">
+        <div class="section-header">
+          <h2 class="section-title">따뜻한 뉴스</h2>
+          <button class="section-arrow">›</button>
+        </div>
+
+        <div class="horizontal-scroll">
+          <article class="news-card">
+            <div class="news-thumb">사진</div>
+            <div class="news-meta">2025.11.26</div>
+            <div class="news-title">
+              결제하면서 직접 기부한 CU, 착한 100일 기...
+            </div>
+          </article>
+
+          <article class="news-card">
+            <div class="news-thumb">사진</div>
+            <div class="news-meta">2025.11.25</div>
+            <div class="news-title">
+              온성의료재단, 초록우산 어린이재단에 1,000만...
+            </div>
+          </article>
+
+          <article class="news-card">
+            <div class="news-thumb">사진</div>
+            <div class="news-meta">2025.11.20</div>
+            <div class="news-title">
+              LG화학 임직원, 결식아동 도시락 2만개 후원...
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 섹션 4: 우리들의 커뮤니티 (세로 리스트) -->
+      <section class="home-section">
+        <div class="section-header">
+          <h2 class="section-title">우리들의 커뮤니티</h2>
+          <button class="section-arrow">›</button>
+        </div>
+
+        <div class="community-list">
+          <article class="community-item">
+            <div class="community-tag">드림 셰프</div>
+            <div class="community-text">
+              지도 중학교 때 급식카드로 밥 먹었어요. 정...
+            </div>
+          </article>
+
+          <article class="community-item">
+            <div class="community-tag">드림 셰프</div>
+            <div class="community-text">
+              꼭 어릴 때 저를 응원하는 기분입니다. 아이...
+            </div>
+          </article>
+
+          <article class="community-item">
+            <div class="community-tag">드림을 드림요</div>
+            <div class="community-text">
+              오늘 친구들과 카페에 갔다 왔어요. 후원자...
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 섹션 5: 추천 챗봇 (한 줄) -->
+      <section class="home-section">
+        <button class="row-link">
+          <div class="row-link-main">
+            <div class="row-link-title">추천 챗봇</div>
+            <div class="row-link-sub">드림이가 내가 가진 마일리지로 기부할 품목을 추천해줘요!</div>
+          </div>
+          <div class="row-link-arrow">›</div>
+        </button>
+      </section>
+
+      <!-- 섹션 6: 챗봇에게 질문하기 -->
+      <section class="home-section">
+        <button class="row-link">
+          <div class="row-link-main">
+            <div class="row-link-title">챗봇에게 질문하기</div>
+            <div class="row-link-sub">드림요에 대해 궁금한 걸 물어보세요</div>
+          </div>
+          <div class="row-link-arrow">›</div>
+        </button>
+      </section>
+
+      <!-- 푸터 정보 -->
+      <footer class="home-footer">
+        <p>dreamuldreamyo@gmail.com | (대전광역시 유성구 대덕대로 000)</p>
+        <p>고객센터 042-621-5113</p>
+        <p class="footer-links">
+          이용약관 · 개인정보처리방침 · 자주 묻는 질문
+        </p>
+      </footer>
+    </main>
+
+    <!-- 하단 탭바 -->
+    <nav class="tab-bar">
+      <a href="home.html" class="tab-item active">
+        <span>⌂</span>
+        홈
+      </a>
+      <a href="#" class="tab-item">
+        <span>💙</span>
+        드림
+      </a>
+      <a href="#" class="tab-item">
+        <span>🗺</span>
+        지도
+      </a>
+      <a href="#" class="tab-item">
+        <span>👤</span>
+        마이
+      </a>
+    </nav>
+
+  </div>
+</body>
+</html>
