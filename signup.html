@@ -18,12 +18,12 @@
       </p>
     </div>
 
+    <!-- ⭐⭐ 여기가 회원가입 폼 ⭐⭐ -->
     <form id="signup-form">
       <div class="form-group">
         <label class="form-label" for="name">이름</label>
         <input
-          id="name"
-          name="name"
+          id="signup-name"
           type="text"
           class="form-input"
           placeholder="이름을 입력해주세요"
@@ -34,8 +34,7 @@
       <div class="form-group">
         <label class="form-label" for="email">이메일</label>
         <input
-          id="email"
-          name="email"
+          id="signup-email"
           type="email"
           class="form-input"
           placeholder="이메일을 입력해주세요"
@@ -46,8 +45,7 @@
       <div class="form-group">
         <label class="form-label" for="password">비밀번호</label>
         <input
-          id="password"
-          name="password"
+          id="signup-password"
           type="password"
           class="form-input"
           placeholder="비밀번호를 입력해주세요"
@@ -58,8 +56,7 @@
       <div class="form-group">
         <label class="form-label" for="password-confirm">비밀번호 확인</label>
         <input
-          id="password-confirm"
-          name="password-confirm"
+          id="signup-password-confirm"
           type="password"
           class="form-input"
           placeholder="비밀번호를 한 번 더 입력해주세요"
@@ -70,32 +67,53 @@
       <button type="submit" class="btn-primary">회원가입</button>
     </form>
 
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+
+    <!-- 네가 만든 init 파일 -->
+    <script src="firebase-init.js"></script>
+
+    <!-- ⭐⭐ Firebase 회원가입 기능 ⭐⭐ -->
     <script>
-      document.getElementById("signup-form").addEventListener("submit", function (e) {
+      const signupForm = document.getElementById("signup-form");
+
+      signupForm.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
-        const pw = document.getElementById("password").value;
-        const pw2 = document.getElementById("password-confirm").value;
+        const name = document.getElementById("signup-name").value.trim();
+        const email = document.getElementById("signup-email").value.trim();
+        const password = document.getElementById("signup-password").value.trim();
+        const passwordConfirm = document.getElementById("signup-password-confirm").value.trim();
 
-        if (pw !== pw2) {
-          alert("비밀번호가 서로 다릅니다. 다시 확인해주세요!");
+        if (password !== passwordConfirm) {
+          alert("비밀번호가 일치하지 않습니다.");
           return;
         }
 
-        // 여기서 실제로는 서버로 보내야 하지만,
-        // 지금은 데모니까 안내만 해줄게
-        alert(
-          "회원가입 정보가 입력되었습니다. (데모)\n\n" +
-          "이름: " + name + "\n" +
-          "이메일: " + email
-        );
+        // Firebase Auth 회원가입
+        auth.createUserWithEmailAndPassword(email, password)
+          .then((userCredential) => {
+            const user = userCredential.user;
 
-        // 회원가입 완료 후 로그인 화면으로 이동
-        window.location.href = "login.html";
+            // Firestore에 사용자 정보 저장 (선택)
+            db.collection("users").doc(user.uid).set({
+              name: name,
+              email: email,
+              createdAt: new Date()
+            });
+
+            alert("회원가입이 완료되었습니다! 이제 로그인해 주세요 😊");
+            window.location.href = "login.html";
+          })
+          .catch((error) => {
+            console.error(error);
+            alert("회원가입 오류: " + error.message);
+          });
       });
     </script>
+
   </div>
 </body>
 </html>
