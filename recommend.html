@@ -26,3 +26,68 @@
           보유 포인트를 입력해 주세요!
         </div>
       </div>
+    </main>
+
+    <!-- 하단 입력창 -->
+    <form class="chat-input-bar" id="chat-form">
+      <input
+        type="text"
+        id="chat-input"
+        class="chat-input"
+        placeholder="보유 마일리지를 입력하세요 (예: 3500)"
+        autocomplete="off"
+      />
+      <button type="submit" class="chat-send-button">전송</button>
+    </form>
+  </div>
+
+  <script>
+    const chatBody = document.getElementById("chat-body");
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+
+    function addBubble(text, type) {
+      const row = document.createElement("div");
+      row.className = "chat-row " + type;
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble";
+      bubble.innerHTML = text.replace(/\n/g, "<br />");
+
+      row.appendChild(bubble);
+      chatBody.appendChild(row);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function getDemoReply(message) {
+      const num = message.match(/\d+/g);
+      if (num) {
+        const point = num[0];
+        return (
+          `입력해 주신 포인트는 <b>${point}포인트</b>네요!<br><br>` +
+          `이 포인트로 기부할 수 있는 예시 품목들이에요.<br><br>` +
+          `• [생필품] GS25 좋은느낌 (4,000P)<br>` +
+          `• [음료] 이디야커피 카페모카 R (3,500P)<br>` +
+          `• [음료] 더벤티 아메리카노 (3,500P)<br><br>` +
+          `원하는 품목을 골라 아이들에게 응원을 전해볼까요? 😊`
+        );
+      }
+      return "보유 마일리지를 숫자로 입력해 주면, 기부 가능한 품목을 추천해드릴게요! 예: 3500";
+    }
+
+    chatForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      addBubble(text, "user");
+      chatInput.value = "";
+
+      setTimeout(() => {
+        const reply = getDemoReply(text);
+        addBubble(reply, "bot");
+      }, 700);
+    });
+  </script>
+</body>
+</html>
