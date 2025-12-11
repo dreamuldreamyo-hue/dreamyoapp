@@ -60,3 +60,12 @@
   </div>
 </body>
 </html>
+<script>
+  document.getElementById("login-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // 나중에 Firebase 로그인 기능을 여기에 넣을 예정.
+    // 지금은 로그인 버튼을 누르면 홈 화면으로 이동하게 만들기!
+    window.location.href = "home.html";
+  });
+</script>
