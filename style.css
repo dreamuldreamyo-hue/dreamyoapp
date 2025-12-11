@@ -400,3 +400,141 @@ body {
 .tab-item.active {
   color: #3e63ff;
 }
+/* --------- 추천해드리밍 챗봇 화면 --------- */
+
+.chat-screen {
+  padding-top: 56px;      /* 헤더 높이만큼 여백 */
+  padding-bottom: 72px;   /* 하단 입력창 여백 */
+  position: relative;
+}
+
+/* 상단 헤더 */
+.chat-header {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-header .back {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 22px;
+  text-decoration: none;
+  color: #111827;
+}
+
+/* 채팅 영역 */
+.chat-body {
+  height: calc(100% - 56px - 72px);
+  overflow-y: auto;
+  padding: 8px 4px 8px 4px;
+}
+
+/* 말풍선 줄 */
+.chat-row {
+  display: flex;
+  margin: 6px 0;
+}
+
+.chat-row.bot {
+  justify-content: flex-start;
+}
+
+.chat-row.user {
+  justify-content: flex-end;
+}
+
+/* 기본 말풍선 */
+.chat-bubble {
+  max-width: 80%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* 봇 말풍선 */
+.chat-row.bot .chat-bubble {
+  background: #f3f4f6;
+  color: #111827;
+  border-bottom-left-radius: 2px;
+}
+
+/* 사용자 말풍선 */
+.chat-row.user .chat-bubble {
+  background: #3e63ff;
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
+}
+
+/* 추천 카드 느낌의 봇 말풍선 */
+.chat-bubble-card {
+  background: #f9fafb;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+/* 말풍선 아래 버튼 두 개 */
+.chat-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+
+.chat-action-button {
+  min-width: 120px;
+  padding: 10px 0;
+  border-radius: 18px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chat-action-sub {
+  background: #f9fafb;
+}
+
+/* 하단 입력창 */
+.chat-input-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px 12px;
+  display: flex;
+  gap: 8px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-input {
+  flex: 1;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.chat-send-button {
+  border-radius: 18px;
+  border: none;
+  padding: 0 16px;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
