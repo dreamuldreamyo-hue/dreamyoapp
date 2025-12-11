@@ -49,23 +49,17 @@
       </p>
     </form>
 
-    <script>
-      // 진짜 서버는 없으니까, 일단 폼 제출을 막고 알림만 띄우기
-      document.getElementById("login-form").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const id = document.getElementById("login-id").value;
-        alert("로그인 기능은 나중에 서버와 연결할 예정입니다.\\n입력한 아이디: " + id);
-      });
-    </script>
-  </div>
-</body>
-</html>
+   </div>  <!-- 너의 마지막 div -->
+
 <script>
   document.getElementById("login-form").addEventListener("submit", function (e) {
     e.preventDefault();
 
-    // 나중에 Firebase 로그인 기능을 여기에 넣을 예정.
-    // 지금은 로그인 버튼을 누르면 홈 화면으로 이동하게 만들기!
+    // 홈 화면으로 이동
     window.location.href = "home.html";
   });
 </script>
+
+</body>
+</html>
+
