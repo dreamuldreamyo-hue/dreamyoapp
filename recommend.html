@@ -41,11 +41,238 @@
     </form>
   </div>
 
-  <!-- 🔥 Firebase SDK (signup/login에서 쓰는 것과 똑같이) -->
+   <!-- 🔥 Firebase SDK 추가 -->
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
   <script src="firebase-init.js"></script>
+
+  <!-- 🔥 Firestore 기반 추천 챗봇 로직 -->
+  <script>
+    const chatBody = document.getElementById("chat-body");
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+
+    let actionsShown = false;        // 기부하기/종료하기 버튼 생성 여부
+    let selectedItem = null;         // 선택된 상품 객체
+    let selectedAmount = 0;          // 선택된 상품 가격(P)
+    let products = [];               // Firestore에서 가져온 전체 상품
+
+    // ---------- 0. Firestore에서 products 한 번만 가져오기 ----------
+    db.collection("products")
+      .get()
+      .then((snapshot) => {
+        products = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("상품 목록 로딩 완료:", products);
+      })
+      .catch((err) => {
+        console.error("상품 불러오기 오류:", err);
+      });
+
+    // ---------- 공통: 말풍선/카드 UI ----------
+    function addBubble(text, type) {
+      const row = document.createElement("div");
+      row.className = "chat-row " + type;
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble";
+      bubble.innerHTML = text.replace(/\n/g, "<br />");
+
+      row.appendChild(bubble);
+      chatBody.appendChild(row);
+
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function addCardBubble(text) {
+      const row = document.createElement("div");
+      row.className = "chat-row bot";
+
+      const bubble = document.createElement("div");
+      bubble.className = "chat-bubble chat-bubble-card";
+      bubble.innerHTML = text.replace(/\n/g, "<br />");
+
+      row.appendChild(bubble);
+      chatBody.appendChild(row);
+
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // ---------- 1. 추천용 텍스트 & 상품 리스트 만들기 ----------
+    function getRecommendedItems(point) {
+      if (!products.length) return [];
+
+      // price <= point 인 상품만 골라서 가격 오름차순
+      const candidates = products
+        .filter(
+          (p) => typeof p.price === "number" && p.price <= point
+        )
+        .sort((a, b) => a.price - b.price);
+
+      // 상위 3개만 추천
+      return candidates.slice(0, 3);
+    }
+
+    function makeRecommendationText(point, items) {
+      if (!items.length) {
+        return (
+          `현재 <b>${point.toLocaleString()}포인트</b>로는 등록된 기부 상품이 없어요 😢<br>` +
+          `조금 더 포인트를 모으거나, 금액을 다시 입력해 볼까요?`
+        );
+      }
+
+      const listHtml = items
+        .map((item, idx) => {
+          const category = item.category || "기부";
+          const priceText = item.price
+            ? item.price.toLocaleString() + "P"
+            : "";
+          return `${idx + 1}. [${category}] ${item.name} (${priceText})`;
+        })
+        .join("<br>");
+
+      return (
+        `현재 <b>${point.toLocaleString()}포인트</b>로 기부 가능한 품목이에요.<br><br>` +
+        listHtml +
+        `<br><br>원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
+      );
+    }
+
+    // ---------- 2. 품목 선택 버튼들 (Firestore 데이터 기반) ----------
+    function showOptions(items) {
+      const old = document.querySelector(".chat-options");
+      if (old) old.remove();
+
+      if (!items || !items.length) return;
+
+      const options = document.createElement("div");
+      options.className = "chat-options";
+
+      items.forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chat-option-button";
+
+        const title = document.createElement("div");
+        title.className = "chat-option-title";
+        title.textContent = `[${item.category || "기부"}] ${item.name}`;
+
+        const price = document.createElement("div");
+        price.className = "chat-option-price";
+        price.textContent = item.price.toLocaleString() + "P";
+
+        btn.appendChild(title);
+        btn.appendChild(price);
+
+        btn.onclick = () => {
+          document
+            .querySelectorAll(".chat-option-button")
+            .forEach((el) => el.classList.remove("selected"));
+
+          btn.classList.add("selected");
+          selectedItem = item;
+          selectedAmount = item.price;
+        };
+
+        options.appendChild(btn);
+      });
+
+      chatBody.appendChild(options);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // ---------- 3. 기부하기 / 종료하기 버튼 ----------
+    function showActions() {
+      if (actionsShown) return;
+      actionsShown = true;
+
+      const actions = document.createElement("div");
+      actions.className = "chat-actions";
+
+      const donateBtn = document.createElement("button");
+      donateBtn.className = "chat-action-button";
+      donateBtn.textContent = "기부하기";
+
+      donateBtn.onclick = () => {
+        if (!selectedItem) {
+          alert("먼저 기부할 품목을 하나 선택해 주세요!");
+          return;
+        }
+
+        localStorage.setItem(
+          "donationItem",
+          `[${selectedItem.category || "기부"}] ${selectedItem.name}`
+        );
+        localStorage.setItem(
+          "donationAmount",
+          String(selectedItem.price || 0)
+        );
+        localStorage.setItem("donationItemId", selectedItem.id || "");
+
+        window.location.href = "payment.html";
+      };
+
+      const endBtn = document.createElement("button");
+      endBtn.className = "chat-action-button chat-action-sub";
+      endBtn.textContent = "종료하기";
+      endBtn.onclick = () => {
+        window.location.href = "home.html";
+      };
+
+      actions.appendChild(donateBtn);
+      actions.appendChild(endBtn);
+
+      chatBody.appendChild(actions);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    // ---------- 4. 채팅 입력 처리 ----------
+    chatForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const text = chatInput.value.trim();
+      if (!text) return;
+
+      addBubble(text, "user");
+      chatInput.value = "";
+
+      if (!products.length) {
+        setTimeout(() => {
+          addBubble(
+            "잠시만요! 아직 기부 상품 목록을 불러오는 중이에요. 다시 한 번만 입력해 주세요 😊",
+            "bot"
+          );
+        }, 500);
+        return;
+      }
+
+      const num = text.match(/\d+/g);
+      if (!num) {
+        setTimeout(() => {
+          addBubble(
+            "보유 마일리지를 숫자로 입력해 주면, 기부 가능한 품목을 추천해드릴게요! 예: 5000",
+            "bot"
+          );
+        }, 500);
+        return;
+      }
+
+      const point = parseInt(num[0], 10);
+      const items = getRecommendedItems(point);
+
+      setTimeout(() => {
+        const reply = makeRecommendationText(point, items);
+        addCardBubble(reply);
+        showOptions(items);
+        showActions();
+      }, 600);
+    });
+  </script>
+</body>
+</html>
+
 
   <script>
     const chatBody = document.getElementById("chat-body");
