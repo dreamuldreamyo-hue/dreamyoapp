@@ -542,3 +542,150 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
+/* --------- 기부 결제 화면 --------- */
+
+.pay-screen {
+  padding: 56px 24px 80px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 헤더 */
+.pay-header {
+  position: absolute;
+  top: 16px;
+  left: 24px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pay-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* recommend.html 에서 쓰는 .back 과 동일하게 사용 */
+.pay-header .back {
+  position: absolute;
+  left: 0;
+  font-size: 22px;
+  text-decoration: none;
+  color: #111827;
+}
+
+/* 본문 영역 */
+.pay-body {
+  margin-top: 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 금액 카드 */
+.pay-amount-card {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  padding: 12px 14px;
+  background: #f9fafb;
+}
+
+.pay-amount-label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.pay-amount-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.pay-amount-desc {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+/* 결제 수단 카드 */
+.pay-methods-card {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 12px 10px;
+}
+
+.pay-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* 결제 수단 리스트 */
+.pay-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pay-method {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.pay-method:hover {
+  background: #f3f4f6;
+}
+
+.pay-method-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pay-method-name {
+  font-size: 13px;
+  color: #111827;
+}
+
+.pay-method-extra {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pay-method input[type="radio"] {
+  accent-color: #3e63ff;
+}
+
+/* 마지막 아래 여백용 */
+.pay-method-spacer {
+  height: 4px;
+}
+
+/* 하단 결제 버튼 */
+.pay-submit-button {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+  height: 44px;
+  border-radius: 999px;
+  border: none;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pay-submit-button:hover {
+  opacity: 0.95;
+}
