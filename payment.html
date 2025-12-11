@@ -25,7 +25,7 @@
         </div>
         <div class="order-row">
           <span class="order-label">메뉴</span>
-          <span class="order-value">폴더스파이시 버거 세트</span>
+          <span class="order-value">슈퍼싸이 세트</span>
         </div>
 
         <div class="order-row order-total">
@@ -190,12 +190,10 @@
       const option = e.target.closest(".pay-method-option");
       if (!option) return;
 
-      // 모든 선택 해제
       document
         .querySelectorAll(".pay-method-option")
         .forEach((el) => el.classList.remove("selected"));
 
-      // 선택된 것만 표시
       option.classList.add("selected");
       selectedMethod = option.dataset.method || "신용카드";
     });
@@ -224,7 +222,6 @@
           "실제 결제는 이루어지지 않습니다."
       );
 
-      // 데모용: 결제 후 홈으로 이동
       window.location.href = "home.html";
     });
   </script>
