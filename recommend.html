@@ -46,7 +46,10 @@
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
-    let actionsShown = false; // 기부하기/종료하기 버튼이 이미 만들어졌는지 여부
+    let actionsShown = false;   // 기부하기/종료하기 버튼 생성 여부
+    let optionsShown = false;   // 품목 선택 옵션 생성 여부
+    let selectedItem = null;    // 선택된 품목 이름
+    let selectedAmount = 0;     // 선택된 품목 가격(P)
 
     // 기본 말풍선 추가
     function addBubble(text, type) {
@@ -78,6 +81,58 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
+    // 품목 선택 버튼들 보여주기
+    function showOptions() {
+      if (optionsShown) return;
+      optionsShown = true;
+
+      const options = document.createElement("div");
+      options.className = "chat-options";
+
+      const items = [
+        { label: "[생필품] GS25 좋은느낌", price: 4000 },
+        { label: "[음료] 이디야커피 카페모카 R", price: 3500 },
+        { label: "[음료] 더벤티 아메리카노", price: 3500 },
+      ];
+
+      items.forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "chat-option-button";
+        btn.dataset.price = item.price;
+        btn.dataset.label = item.label;
+
+        const title = document.createElement("div");
+        title.className = "chat-option-title";
+        title.textContent = item.label;
+
+        const price = document.createElement("div");
+        price.className = "chat-option-price";
+        price.textContent = item.price.toLocaleString() + "P";
+
+        btn.appendChild(title);
+        btn.appendChild(price);
+
+        btn.onclick = () => {
+          // 모두 선택 해제
+          document
+            .querySelectorAll(".chat-option-button")
+            .forEach((el) => el.classList.remove("selected"));
+
+          // 이 버튼만 선택 표시
+          btn.classList.add("selected");
+
+          selectedItem = item.label;
+          selectedAmount = item.price;
+        };
+
+        options.appendChild(btn);
+      });
+
+      chatBody.appendChild(options);
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
     // 기부하기 / 종료하기 버튼 영역 추가
     function showActions() {
       if (actionsShown) return;
@@ -89,8 +144,18 @@
       const donateBtn = document.createElement("button");
       donateBtn.className = "chat-action-button";
       donateBtn.textContent = "기부하기";
-      // 👉 결제 페이지로 이동
+
+      // 👉 결제 페이지로 이동 (선택 품목/금액 저장)
       donateBtn.onclick = () => {
+        if (!selectedItem) {
+          alert("먼저 기부할 품목을 하나 선택해 주세요!");
+          return;
+        }
+
+        // 결제 화면에서 사용할 정보 저장
+        localStorage.setItem("donationItem", selectedItem);
+        localStorage.setItem("donationAmount", String(selectedAmount));
+
         window.location.href = "payment.html";
       };
 
@@ -98,7 +163,6 @@
       endBtn.className = "chat-action-button chat-action-sub";
       endBtn.textContent = "종료하기";
       endBtn.onclick = () => {
-        // 일단은 홈으로 돌아가기
         window.location.href = "home.html";
       };
 
@@ -116,7 +180,7 @@
         `• [생필품] GS25 좋은느낌 (4,000P)<br>` +
         `• [음료] 이디야커피 카페모카 R (3,500P)<br>` +
         `• [음료] 더벤티 아메리카노 (3,500P)<br><br>` +
-        `원하는 품목을 골라 아이들에게 응원을 전해볼까요? 😊`
+        `원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
       );
     }
 
@@ -143,14 +207,12 @@
 
       const point = num[0];
 
-      // 👉 사용자가 입력한 포인트를 저장 (결제 화면에서 가져다 씀)
-      localStorage.setItem("donationAmount", point);
-
-      // 추천 카드 + 버튼은 약간 딜레이 후 등장
+      // 추천 카드 + 품목 선택 + 버튼은 약간 딜레이 후 등장
       setTimeout(() => {
         const reply = getDemoReply(point);
-        addCardBubble(reply);  // 카드형 말풍선
-        showActions();         // 버튼 두 개 생성
+        addCardBubble(reply);   // 카드형 말풍선
+        showOptions();          // 품목 선택 버튼들
+        showActions();          // 기부하기/종료하기 버튼
       }, 600);
     });
   </script>
