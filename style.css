@@ -493,8 +493,9 @@ body {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin: 12px 0 4px;
+  margin: 12px 0 80px;   /* 아래에 80px 여백을 줘서 입력창 위에 떠 있게 */
 }
+
 
 .chat-action-button {
   min-width: 120px;
