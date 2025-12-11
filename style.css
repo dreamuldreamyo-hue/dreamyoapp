@@ -1,4 +1,4 @@
-/* 전체 기본 설정 */
+/* 전체 기본 설정 */ 
 * {
   box-sizing: border-box;
 }
@@ -24,11 +24,11 @@ body {
   position: relative;
 }
 
-/* 로고 텍스트 대신: 나중에 img로 바꿔도 됨 */
+/* 로고 텍스트 */
 .logo {
   font-size: 40px;
   font-weight: 800;
-  color: #3e63ff; /* Dreamyo 파란색 느낌 */
+  color: #3e63ff;
   margin-bottom: 8px;
 }
 
@@ -99,7 +99,7 @@ body {
   text-decoration: none;
 }
 
-/* 회원가입 화면 상단 뒤로가기 화살표 */
+/* 뒤로가기 화살표 */
 .back {
   position: absolute;
   left: 16px;
@@ -108,14 +108,18 @@ body {
   text-decoration: none;
   color: #333333;
 }
+
 /* -------------------------------- */
-/* 공통: .screen 이 스크롤 되도록 */
+/* .screen 이 스크롤 되도록 */
 /* -------------------------------- */
 .screen {
   overflow-y: auto;
 }
 
-/* 홈 전체 레이아웃 */
+/* ========================= */
+/* 홈 화면 */
+/* ========================= */
+
 .screen-home {
   padding-bottom: 80px; /* 탭바 공간 확보 */
 }
@@ -370,7 +374,7 @@ body {
   margin-top: 4px;
 }
 
-/* 하단 탭바 (이미 있다면 이 부분은 건너뛰거나 조정) */
+/* 하단 탭바 */
 .tab-bar {
   position: absolute;
   left: 0;
@@ -400,13 +404,15 @@ body {
 .tab-item.active {
   color: #3e63ff;
 }
-/* --------- 추천해드리밍 챗봇 화면 --------- */
+
+/* ========================= */
+/* 추천해드리밍 챗봇 화면 */
+/* ========================= */
 
 .chat-screen {
-  padding: 56px 24px 72px;
+  padding-top: 56px;      /* 헤더 높이만큼 여백 */
+  padding-bottom: 72px;   /* 하단 입력창 여백 */
   position: relative;
-  display: flex;
-  flex-direction: column;
 }
 
 /* 상단 헤더 */
@@ -437,12 +443,10 @@ body {
 
 /* 채팅 영역 */
 .chat-body {
-  flex: 1;
+  height: calc(100% - 56px - 72px);
   overflow-y: auto;
   padding: 8px 4px 8px 4px;
 }
-
-
 
 /* 말풍선 줄 */
 .chat-row {
@@ -493,9 +497,8 @@ body {
   display: flex;
   justify-content: center;
   gap: 12px;
-  margin: 12px 0 80px;   /* 아래에 80px 여백을 줘서 입력창 위에 떠 있게 */
+  margin: 12px 0 4px;
 }
-
 
 .chat-action-button {
   min-width: 120px;
@@ -542,154 +545,10 @@ body {
   font-weight: 600;
   cursor: pointer;
 }
-/* --------- 기부 결제 화면 --------- */
 
-.pay-screen {
-  padding: 56px 24px 80px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 상단 헤더 */
-.pay-header {
-  position: absolute;
-  top: 16px;
-  left: 24px;
-  right: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.pay-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-}
-
-/* recommend.html 에서 쓰는 .back 과 동일하게 사용 */
-.pay-header .back {
-  position: absolute;
-  left: 0;
-  font-size: 22px;
-  text-decoration: none;
-  color: #111827;
-}
-
-/* 본문 영역 */
-.pay-body {
-  margin-top: 52px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* 금액 카드 */
-.pay-amount-card {
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  padding: 12px 14px;
-  background: #f9fafb;
-}
-
-.pay-amount-label {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 4px;
-}
-
-.pay-amount-value {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 4px;
-}
-
-.pay-amount-desc {
-  font-size: 11px;
-  color: #9ca3af;
-}
-
-/* 결제 수단 카드 */
-.pay-methods-card {
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  background: #ffffff;
-  padding: 12px 10px;
-}
-
-.pay-section-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-/* 결제 수단 리스트 */
-.pay-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.pay-method {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 6px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.pay-method:hover {
-  background: #f3f4f6;
-}
-
-.pay-method-left {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.pay-method-name {
-  font-size: 13px;
-  color: #111827;
-}
-
-.pay-method-extra {
-  font-size: 11px;
-  color: #6b7280;
-}
-
-.pay-method input[type="radio"] {
-  accent-color: #3e63ff;
-}
-
-/* 마지막 아래 여백용 */
-.pay-method-spacer {
-  height: 4px;
-}
-
-/* 하단 결제 버튼 */
-.pay-submit-button {
-  position: absolute;
-  left: 24px;
-  right: 24px;
-  bottom: 24px;
-  height: 44px;
-  border-radius: 999px;
-  border: none;
-  background: #3e63ff;
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.pay-submit-button:hover {
-  opacity: 0.95;
-}
-/* --------- 결제 화면 (사줄게요) --------- */
+/* ========================= */
+/* 결제 화면 (사줄게요) */
+/* ========================= */
 
 .payment-screen {
   padding: 56px 16px 80px;
