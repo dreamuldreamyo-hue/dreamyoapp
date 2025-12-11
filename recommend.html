@@ -41,17 +41,38 @@
     </form>
   </div>
 
+  <!-- 🔥 Firebase SDK (signup/login에서 쓰는 것과 똑같이) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script src="firebase-init.js"></script>
+
   <script>
     const chatBody = document.getElementById("chat-body");
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
-    let actionsShown = false;   // 기부하기/종료하기 버튼 생성 여부
-    let optionsShown = false;   // 품목 선택 옵션 생성 여부
-    let selectedItem = null;    // 선택된 품목 이름
-    let selectedAmount = 0;     // 선택된 품목 가격(P)
+    let actionsShown = false;        // 기부하기/종료하기 버튼 생성 여부
+    let selectedItem = null;         // 선택된 상품 객체
+    let selectedAmount = 0;          // 선택된 상품 가격(P)
+    let products = [];               // Firestore에서 가져온 전체 상품
+    let lastRecommended = [];        // 마지막 추천 리스트
 
-    // 기본 말풍선 추가
+    // ---------- 0. Firestore에서 products 한 번만 가져오기 ----------
+    db.collection("products")
+      .get()
+      .then((snapshot) => {
+        products = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        console.log("상품 목록 로딩 완료:", products);
+      })
+      .catch((err) => {
+        console.error("상품 불러오기 오류:", err);
+      });
+
+    // ---------- 공통: 말풍선/카드 UI ----------
     function addBubble(text, type) {
       const row = document.createElement("div");
       row.className = "chat-row " + type;
@@ -66,7 +87,6 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // 추천 카드 스타일 말풍선 추가
     function addCardBubble(text) {
       const row = document.createElement("div");
       row.className = "chat-row bot";
@@ -81,30 +101,67 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // 품목 선택 버튼들 보여주기
-    function showOptions() {
-      if (optionsShown) return;
-      optionsShown = true;
+    // ---------- 1. 추천용 텍스트 & 상품 리스트 만들기 ----------
+
+    function getRecommendedItems(point) {
+      if (!products.length) return [];
+
+      // price <= point 인 상품만 골라서 가격 오름차순
+      const candidates = products
+        .filter(
+          (p) => typeof p.price === "number" && p.price <= point
+        )
+        .sort((a, b) => a.price - b.price);
+
+      // 상위 3개만 추천
+      return candidates.slice(0, 3);
+    }
+
+    function makeRecommendationText(point, items) {
+      if (!items.length) {
+        return (
+          `현재 <b>${point.toLocaleString()}포인트</b>로는 등록된 기부 상품이 없어요 😢<br>` +
+          `조금 더 포인트를 모으거나, 금액을 다시 입력해 볼까요?`
+        );
+      }
+
+      const listHtml = items
+        .map((item, idx) => {
+          const category = item.category || "기부";
+          const priceText = item.price
+            ? item.price.toLocaleString() + "P"
+            : "";
+          return `${idx + 1}. [${category}] ${item.name} (${priceText})`;
+        })
+        .join("<br>");
+
+      return (
+        `현재 <b>${point.toLocaleString()}포인트</b>로 기부 가능한 품목이에요.<br><br>` +
+        listHtml +
+        `<br><br>원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
+      );
+    }
+
+    // ---------- 2. 품목 선택 버튼들 보여주기 (Firestore 데이터 기반) ----------
+
+    function showOptions(items) {
+      // 이전 옵션이 있으면 제거
+      const old = document.querySelector(".chat-options");
+      if (old) old.remove();
+
+      if (!items || !items.length) return;
 
       const options = document.createElement("div");
       options.className = "chat-options";
-
-      const items = [
-        { label: "[생필품] GS25 좋은느낌", price: 4000 },
-        { label: "[음료] 이디야커피 카페모카 R", price: 3500 },
-        { label: "[음료] 더벤티 아메리카노", price: 3500 },
-      ];
 
       items.forEach((item) => {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "chat-option-button";
-        btn.dataset.price = item.price;
-        btn.dataset.label = item.label;
 
         const title = document.createElement("div");
         title.className = "chat-option-title";
-        title.textContent = item.label;
+        title.textContent = `[${item.category || "기부"}] ${item.name}`;
 
         const price = document.createElement("div");
         price.className = "chat-option-price";
@@ -122,7 +179,7 @@
           // 이 버튼만 선택 표시
           btn.classList.add("selected");
 
-          selectedItem = item.label;
+          selectedItem = item;
           selectedAmount = item.price;
         };
 
@@ -133,7 +190,8 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // 기부하기 / 종료하기 버튼 영역 추가
+    // ---------- 3. 기부하기 / 종료하기 버튼 영역 ----------
+
     function showActions() {
       if (actionsShown) return;
       actionsShown = true;
@@ -145,7 +203,6 @@
       donateBtn.className = "chat-action-button";
       donateBtn.textContent = "기부하기";
 
-      // 👉 결제 페이지로 이동 (선택 품목/금액 저장)
       donateBtn.onclick = () => {
         if (!selectedItem) {
           alert("먼저 기부할 품목을 하나 선택해 주세요!");
@@ -153,8 +210,16 @@
         }
 
         // 결제 화면에서 사용할 정보 저장
-        localStorage.setItem("donationItem", selectedItem);
-        localStorage.setItem("donationAmount", String(selectedAmount));
+        localStorage.setItem(
+          "donationItem",
+          `[${selectedItem.category || "기부"}] ${selectedItem.name}`
+        );
+        localStorage.setItem(
+          "donationAmount",
+          String(selectedItem.price || 0)
+        );
+        // 필요하다면 id도 넘길 수 있음
+        localStorage.setItem("donationItemId", selectedItem.id || "");
 
         window.location.href = "payment.html";
       };
@@ -173,16 +238,7 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // 포인트에 따라 봇 답장 텍스트 만들기
-    function getDemoReply(point) {
-      return (
-        `현재 <b>${point}포인트</b>로 기부 가능한 품목이에요.<br><br>` +
-        `• [생필품] GS25 좋은느낌 (4,000P)<br>` +
-        `• [음료] 이디야커피 카페모카 R (3,500P)<br>` +
-        `• [음료] 더벤티 아메리카노 (3,500P)<br><br>` +
-        `원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
-      );
-    }
+    // ---------- 4. 채팅 입력 처리 ----------
 
     chatForm.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -192,6 +248,17 @@
       // 사용자 말풍선 추가
       addBubble(text, "user");
       chatInput.value = "";
+
+      // Firestore 데이터 아직 안 온 경우
+      if (!products.length) {
+        setTimeout(() => {
+          addBubble(
+            "잠시만요! 아직 기부 상품 목록을 불러오는 중이에요. 다시 한 번만 입력해 주세요 😊",
+            "bot"
+          );
+        }, 500);
+        return;
+      }
 
       // 숫자(포인트) 추출
       const num = text.match(/\d+/g);
@@ -205,13 +272,16 @@
         return;
       }
 
-      const point = num[0];
+      const point = parseInt(num[0], 10);
 
-      // 추천 카드 + 품목 선택 + 버튼은 약간 딜레이 후 등장
+      // 추천 계산
+      const items = getRecommendedItems(point);
+      lastRecommended = items;
+
       setTimeout(() => {
-        const reply = getDemoReply(point);
+        const reply = makeRecommendationText(point, items);
         addCardBubble(reply);   // 카드형 말풍선
-        showOptions();          // 품목 선택 버튼들
+        showOptions(items);     // Firestore 기반 품목 선택 버튼들
         showActions();          // 기부하기/종료하기 버튼
       }, 600);
     });
