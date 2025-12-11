@@ -15,44 +15,43 @@
     </header>
 
     <!-- 채팅 영역 -->
-   <main class="chat-body" id="chat-body">
-  <!-- 첫 번째 봇 메시지 -->
-  <div class="chat-row bot">
-    <div class="chat-bubble">
-      안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
-      <b>추천해드리밍</b> 입니다.<br /><br />
-      기차 마일리지로 기부할 수 있는 품목을<br />
-      추천해드릴게요.<br />
-      보유 포인트를 입력해 주세요!
-    </div>
-  </div>
+    <main class="chat-body" id="chat-body">
+      <!-- 1. 첫 번째 봇 메시지 -->
+      <div class="chat-row bot">
+        <div class="chat-bubble">
+          안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
+          <b>추천해드리밍</b> 입니다.<br /><br />
+          기차 마일리지로 기부할 수 있는 품목을<br />
+          추천해드릴게요.<br />
+          보유 포인트를 입력해 주세요!
+        </div>
+      </div>
 
-  <!-- 예시: 사용자가 입력한 말풍선 -->
-  <div class="chat-row user">
-    <div class="chat-bubble">
-      내 마일리지는 5,000포인트야.
-    </div>
-  </div>
+      <!-- 2. 예시 사용자 말풍선 -->
+      <div class="chat-row user">
+        <div class="chat-bubble">
+          내 마일리지는 5,000포인트야.
+        </div>
+      </div>
 
-  <!-- 예시: 추천 결과 봇 말풍선 (카드 스타일) -->
-  <div class="chat-row bot">
-    <div class="chat-bubble chat-bubble-card">
-      현재 5,000포인트로 기부 가능한 품목이에요.<br /><br />
-      • [생필품] GS25 좋은느낌 (4,000P)<br />
-      • [음료] 이디야커피 카페모카 R (3,500P)<br />
-      • [음료] 더벤티 아메리카노 (3,500P)<br /><br />
-      원하는 품목을 골라 아이들에게 따뜻한 응원을<br />
-      전해볼까요? 😊
-    </div>
-  </div>
+      <!-- 3. 추천 결과 봇 말풍선 (카드 스타일) -->
+      <div class="chat-row bot">
+        <div class="chat-bubble chat-bubble-card">
+          현재 5,000포인트로 기부 가능한 품목이에요.<br /><br />
+          • [생필품] GS25 좋은느낌 (4,000P)<br />
+          • [음료] 이디야커피 카페모카 R (3,500P)<br />
+          • [음료] 더벤티 아메리카노 (3,500P)<br /><br />
+          원하는 품목을 골라 아이들에게 따뜻한 응원을<br />
+          전해볼까요? 😊
+        </div>
+      </div>
 
-  <!-- 추천 결과 아래 버튼 2개 -->
-  <div class="chat-actions">
-    <button class="chat-action-button">기부하기</button>
-    <button class="chat-action-button chat-action-sub">종료하기</button>
-  </div>
-</main>
-
+      <!-- 4. 추천 결과 아래 버튼 두 개 -->
+      <div class="chat-actions">
+        <button class="chat-action-button">기부하기</button>
+        <button class="chat-action-button chat-action-sub">종료하기</button>
+      </div>
+    </main>
 
     <!-- 하단 입력창 -->
     <form class="chat-input-bar" id="chat-form">
