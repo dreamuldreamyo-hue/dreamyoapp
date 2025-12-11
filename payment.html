@@ -2,122 +2,229 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>기부 결제</title>
+  <title>사줄게요 - 결제</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="screen pay-screen">
+  <div class="screen payment-screen">
     <!-- 상단 헤더 -->
-    <header class="pay-header">
+    <header class="payment-header">
       <a href="recommend.html" class="back">‹</a>
-      <h1 class="pay-title">기부 결제</h1>
+      <h1 class="payment-title">사줄게요</h1>
     </header>
 
     <!-- 본문 -->
-    <main class="pay-body">
-      <!-- 결제 금액 박스 -->
-      <section class="pay-amount-card">
-        <div class="pay-amount-label">기부 예정 금액</div>
-        <div class="pay-amount-value">
-          <span id="pay-amount">0</span> 포인트
+    <main class="payment-body">
+      <!-- 주문 요약 카드 -->
+      <section class="pay-card order-card">
+        <div class="card-title">주문 요약</div>
+
+        <div class="order-row">
+          <span class="order-label">음식점</span>
+          <span class="order-value">맘스터치</span>
         </div>
-        <div class="pay-amount-desc">
-          추천해드리밍에서 입력해 주신 포인트 기준으로 결제가 진행됩니다.
+        <div class="order-row">
+          <span class="order-label">메뉴</span>
+          <span class="order-value">폴더스파이시 버거 세트</span>
+        </div>
+
+        <div class="order-row order-total">
+          <span class="order-label">총 금액</span>
+          <span class="order-total-value" id="pay-total">0원</span>
         </div>
       </section>
 
-      <!-- 결제 수단 선택 -->
-      <section class="pay-methods-card">
-        <div class="pay-section-title">결제 수단 선택</div>
+      <!-- 코레일 마일리지 카드 -->
+      <section class="pay-card mileage-card">
+        <div class="order-row">
+          <span class="order-label">코레일 마일리지</span>
+          <span class="mileage-value" id="pay-mileage">0P</span>
+        </div>
+        <button type="button" class="mileage-detail-row">
+          <span>적립 내역 보기</span>
+          <span>›</span>
+        </button>
+      </section>
 
-        <form id="pay-form" class="pay-methods">
-          <label class="pay-method">
-            <div class="pay-method-left">
-              <input type="radio" name="method" value="card" />
-              <span class="pay-method-name">신용·체크카드</span>
+      <!-- 결제 수단 카드 -->
+      <section class="pay-card method-card">
+        <div class="card-title">결제 수단</div>
+
+        <div class="pay-method-list" id="pay-method-list">
+          <!-- 신용카드 -->
+          <button type="button" class="pay-method-option selected" data-method="신용카드">
+            <div class="pay-method-main">
+              <div class="pay-method-icon">💳</div>
+              <div class="pay-method-text">
+                <div class="pay-method-name">신용카드</div>
+                <div class="pay-method-sub">일시불 / 할부 결제</div>
+              </div>
             </div>
-            <span class="pay-method-extra">일시불 / 할부</span>
-          </label>
+            <div class="pay-method-check">✔</div>
+          </button>
 
-          <label class="pay-method">
-            <div class="pay-method-left">
-              <input type="radio" name="method" value="account" />
-              <span class="pay-method-name">계좌이체</span>
+          <!-- 카카오페이 -->
+          <button type="button" class="pay-method-option" data-method="카카오페이">
+            <div class="pay-method-main">
+              <div class="pay-method-icon">🟡</div>
+              <div class="pay-method-text">
+                <div class="pay-method-name">카카오페이</div>
+                <div class="pay-method-sub">카카오톡 간편결제</div>
+              </div>
             </div>
-            <span class="pay-method-extra">공용 안심결제</span>
-          </label>
+          </button>
 
-          <label class="pay-method">
-            <div class="pay-method-left">
-              <input type="radio" name="method" value="kakao" />
-              <span class="pay-method-name">카카오페이</span>
+          <!-- 네이버페이 -->
+          <button type="button" class="pay-method-option" data-method="네이버페이">
+            <div class="pay-method-main">
+              <div class="pay-method-icon">🟢</div>
+              <div class="pay-method-text">
+                <div class="pay-method-name">네이버페이</div>
+                <div class="pay-method-sub">포인트 적립 가능</div>
+              </div>
             </div>
-            <span class="pay-method-extra">간편결제</span>
-          </label>
+          </button>
 
-          <label class="pay-method">
-            <div class="pay-method-left">
-              <input type="radio" name="method" value="naver" />
-              <span class="pay-method-name">네이버페이</span>
+          <!-- 토스페이 -->
+          <button type="button" class="pay-method-option" data-method="토스페이">
+            <div class="pay-method-main">
+              <div class="pay-method-icon">💙</div>
+              <div class="pay-method-text">
+                <div class="pay-method-name">토스페이</div>
+                <div class="pay-method-sub">간편 송금 결제</div>
+              </div>
             </div>
-            <span class="pay-method-extra">포인트 적립</span>
-          </label>
+          </button>
 
-          <label class="pay-method">
-            <div class="pay-method-left">
-              <input type="radio" name="method" value="toss" />
-              <span class="pay-method-name">토스페이</span>
+          <!-- 마일리지 사용 -->
+          <div class="pay-mileage-use">
+            <div class="pay-mileage-use-header">
+              <span class="pay-method-name">마일리지 사용</span>
             </div>
-            <span class="pay-method-extra">간편 송금</span>
-          </label>
+            <div class="pay-mileage-use-body">
+              <div class="pay-mileage-input-row">
+                <span class="pay-mileage-label">마일리지</span>
+                <input
+                  type="number"
+                  id="mileage-input"
+                  class="pay-mileage-input"
+                  min="0"
+                  value="0"
+                />
+                <span class="pay-mileage-unit">P</span>
+                <button type="button" class="pay-mileage-all" id="mileage-all">
+                  모두 사용
+                </button>
+              </div>
+              <div class="pay-mileage-bar">
+                <div class="pay-mileage-bar-fill" id="mileage-bar-fill"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-          <!-- 마지막 여백용 더미 -->
-          <div class="pay-method-spacer"></div>
-        </form>
+      <!-- 응원 메시지 카드 -->
+      <section class="pay-card message-card">
+        <div class="card-title">응원 메시지 (선택)</div>
+        <textarea
+          class="message-textarea"
+          id="support-message"
+          placeholder="따뜻한 응원 메세지를 남겨주세요"
+        ></textarea>
       </section>
     </main>
 
     <!-- 하단 결제 버튼 -->
-    <button class="pay-submit-button" id="pay-submit">
-      결제하기
+    <button class="payment-submit-button" id="payment-submit">
+      <span id="payment-submit-label">0원 결제</span>
     </button>
   </div>
 
   <script>
-    // 1) 추천해드리밍에서 저장해 둔 포인트 가져오기
-    const amountSpan = document.getElementById("pay-amount");
+    // --- 1. 추천해드리밍에서 가져온 금액 세팅 ---
     const storedAmount = localStorage.getItem("donationAmount") || "0";
+    const amount = parseInt(storedAmount, 10) || 0;
 
-    // 간단한 세 자리 콤마 추가
-    function formatNumber(str) {
-      return str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-    amountSpan.textContent = formatNumber(storedAmount);
+    const payTotalEl = document.getElementById("pay-total");
+    const payMileageEl = document.getElementById("pay-mileage");
+    const payButtonLabel = document.getElementById("payment-submit-label");
+    const mileageInput = document.getElementById("mileage-input");
+    const mileageAllBtn = document.getElementById("mileage-all");
+    const mileageBarFill = document.getElementById("mileage-bar-fill");
 
-    // 2) 결제 수단 선택/결제 버튼 동작
-    const payButton = document.getElementById("pay-submit");
-    const payForm = document.getElementById("pay-form");
+    payTotalEl.textContent = formatNumber(amount) + "원";
+    payMileageEl.textContent = formatNumber(amount) + "P";
+    payButtonLabel.textContent = formatNumber(amount) + "원 결제";
+    mileageInput.max = amount;
+    mileageInput.value = 0;
+    mileageBarFill.style.width = "0%";
 
-    payButton.addEventListener("click", function () {
-      const selected = payForm.querySelector("input[name='method']:checked");
-      if (!selected) {
-        alert("결제 수단을 선택해 주세요.");
-        return;
+    function updateMileageBar() {
+      const used = parseInt(mileageInput.value || "0", 10);
+      const ratio = amount > 0 ? Math.min(used / amount, 1) : 0;
+      mileageBarFill.style.width = ratio * 100 + "%";
+    }
+
+    mileageInput.addEventListener("input", () => {
+      if (parseInt(mileageInput.value || "0", 10) > amount) {
+        mileageInput.value = amount;
       }
+      updateMileageBar();
+    });
 
-      const method = selected.value;
-      const prettyAmount = formatNumber(storedAmount);
+    mileageAllBtn.addEventListener("click", () => {
+      mileageInput.value = amount;
+      updateMileageBar();
+    });
 
-      // 해커톤용 데모: 실제 결제 대신 알림 + 홈 이동
+    // --- 2. 결제 수단 선택 ---
+    const methodList = document.getElementById("pay-method-list");
+    let selectedMethod = "신용카드";
+
+    methodList.addEventListener("click", (e) => {
+      const option = e.target.closest(".pay-method-option");
+      if (!option) return;
+
+      // 모든 선택 해제
+      document
+        .querySelectorAll(".pay-method-option")
+        .forEach((el) => el.classList.remove("selected"));
+
+      // 선택된 것만 표시
+      option.classList.add("selected");
+      selectedMethod = option.dataset.method || "신용카드";
+    });
+
+    // --- 3. 결제 버튼 동작 (데모용) ---
+    const submitBtn = document.getElementById("payment-submit");
+
+    submitBtn.addEventListener("click", () => {
+      const usedMileage = parseInt(mileageInput.value || "0", 10);
+      const finalAmount = Math.max(amount - usedMileage, 0);
+
       alert(
-        `해커톤 데모용 안내\n\n` +
-        `선택한 결제 수단: ${method}\n` +
-        `결제 금액: ${prettyAmount} 포인트\n\n` +
-        `실제 결제는 진행되지 않습니다.`
+        "해커톤 데모용 결제입니다.\n\n" +
+          "결제 수단: " +
+          selectedMethod +
+          "\n" +
+          "총 금액: " +
+          formatNumber(amount) +
+          "원\n" +
+          "사용 마일리지: " +
+          formatNumber(usedMileage) +
+          "P\n" +
+          "실제 결제 금액(마일리지 차감 후): " +
+          formatNumber(finalAmount) +
+          "원\n\n" +
+          "실제 결제는 이루어지지 않습니다."
       );
 
-      // 결제 완료 후 홈으로 이동 (또는 '결제 완료' 화면으로 이동해도 됨)
+      // 데모용: 결제 후 홈으로 이동
       window.location.href = "home.html";
     });
   </script>
