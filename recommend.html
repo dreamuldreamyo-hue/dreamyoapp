@@ -89,9 +89,9 @@
       const donateBtn = document.createElement("button");
       donateBtn.className = "chat-action-button";
       donateBtn.textContent = "기부하기";
-      // 나중에 여기서 결제/기부 화면으로 이동하게 만들 수 있음
+      // 👉 결제 페이지로 이동
       donateBtn.onclick = () => {
-        alert("해커톤 데모용: 기부하기 버튼이 눌렸어요! (여기서 결제 화면으로 이동)");
+        window.location.href = "payment.html";
       };
 
       const endBtn = document.createElement("button");
@@ -116,7 +116,7 @@
         `• [생필품] GS25 좋은느낌 (4,000P)<br>` +
         `• [음료] 이디야커피 카페모카 R (3,500P)<br>` +
         `• [음료] 더벤티 아메리카노 (3,500P)<br><br>` +
-        `원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
+        `원하는 품목을 골라 아이들에게 응원을 전해볼까요? 😊`
       );
     }
 
@@ -142,6 +142,9 @@
       }
 
       const point = num[0];
+
+      // 👉 사용자가 입력한 포인트를 저장 (결제 화면에서 가져다 씀)
+      localStorage.setItem("donationAmount", point);
 
       // 추천 카드 + 버튼은 약간 딜레이 후 등장
       setTimeout(() => {
