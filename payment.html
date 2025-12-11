@@ -15,21 +15,19 @@
 
     <!-- 본문 -->
     <main class="payment-body">
-      <!-- 주문 요약 카드 -->
+      <!-- 기부 요약 카드 -->
       <section class="pay-card order-card">
-        <div class="card-title">주문 요약</div>
+        <div class="card-title">기부 요약</div>
 
         <div class="order-row">
-          <span class="order-label">음식점</span>
-          <span class="order-value">맘스터치</span>
-        </div>
-        <div class="order-row">
-          <span class="order-label">메뉴</span>
-          <span class="order-value">슈퍼싸이 세트</span>
+          <span class="order-label">기부 품목</span>
+          <!-- 👉 여기로 선택한 품목 이름이 들어옴 -->
+          <span class="order-value" id="pay-item">선택한 품목</span>
         </div>
 
         <div class="order-row order-total">
-          <span class="order-label">총 금액</span>
+          <span class="order-label">기부 예정 금액</span>
+          <!-- 👉 여기로 선택한 금액이 들어옴 -->
           <span class="order-total-value" id="pay-total">0원</span>
         </div>
       </section>
@@ -142,7 +140,8 @@
   </div>
 
   <script>
-    // --- 1. 추천해드리밍에서 가져온 금액 세팅 ---
+    // --- 1. 추천해드리밍에서 넘어온 데이터 읽기 ---
+    const storedItem   = localStorage.getItem("donationItem")   || "선택한 품목 없음";
     const storedAmount = localStorage.getItem("donationAmount") || "0";
     const amount = parseInt(storedAmount, 10) || 0;
 
@@ -150,14 +149,17 @@
       return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
-    const payTotalEl = document.getElementById("pay-total");
-    const payMileageEl = document.getElementById("pay-mileage");
-    const payButtonLabel = document.getElementById("payment-submit-label");
-    const mileageInput = document.getElementById("mileage-input");
-    const mileageAllBtn = document.getElementById("mileage-all");
-    const mileageBarFill = document.getElementById("mileage-bar-fill");
+    const payItemEl       = document.getElementById("pay-item");
+    const payTotalEl      = document.getElementById("pay-total");
+    const payMileageEl    = document.getElementById("pay-mileage");
+    const payButtonLabel  = document.getElementById("payment-submit-label");
+    const mileageInput    = document.getElementById("mileage-input");
+    const mileageAllBtn   = document.getElementById("mileage-all");
+    const mileageBarFill  = document.getElementById("mileage-bar-fill");
 
-    payTotalEl.textContent = formatNumber(amount) + "원";
+    // 화면에 값 반영
+    payItemEl.textContent    = storedItem;
+    payTotalEl.textContent   = formatNumber(amount) + "원";
     payMileageEl.textContent = formatNumber(amount) + "P";
     payButtonLabel.textContent = formatNumber(amount) + "원 결제";
     mileageInput.max = amount;
@@ -198,7 +200,7 @@
       selectedMethod = option.dataset.method || "신용카드";
     });
 
-    // --- 3. 결제 버튼 동작 (데모용) ---
+    // --- 3. 결제 버튼 (데모용) ---
     const submitBtn = document.getElementById("payment-submit");
 
     submitBtn.addEventListener("click", () => {
@@ -207,23 +209,18 @@
 
       alert(
         "해커톤 데모용 결제입니다.\n\n" +
-          "결제 수단: " +
-          selectedMethod +
-          "\n" +
-          "총 금액: " +
-          formatNumber(amount) +
-          "원\n" +
-          "사용 마일리지: " +
-          formatNumber(usedMileage) +
-          "P\n" +
-          "실제 결제 금액(마일리지 차감 후): " +
-          formatNumber(finalAmount) +
-          "원\n\n" +
-          "실제 결제는 이루어지지 않습니다."
+          "기부 품목: " + storedItem + "\n" +
+          "결제 수단: " + selectedMethod + "\n" +
+          "기부 예정 금액: " + formatNumber(amount) + "원\n" +
+          "사용 마일리지: " + formatNumber(usedMileage) + "P\n" +
+          "실제 결제 금액(마일리지 차감 후): " + formatNumber(finalAmount) +
+          "원\n\n실제 결제는 이루어지지 않습니다."
       );
 
+      // 데모용: 결제 후 홈으로 이동
       window.location.href = "home.html";
     });
   </script>
 </body>
 </html>
+
