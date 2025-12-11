@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>기부 결제</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="screen pay-screen">
+    <!-- 상단 헤더 -->
+    <header class="pay-header">
+      <a href="recommend.html" class="back">‹</a>
+      <h1 class="pay-title">기부 결제</h1>
+    </header>
+
+    <!-- 본문 -->
+    <main class="pay-body">
+      <!-- 결제 금액 박스 -->
+      <section class="pay-amount-card">
+        <div class="pay-amount-label">기부 예정 금액</div>
+        <div class="pay-amount-value">
+          <span id="pay-amount">0</span> 포인트
+        </div>
+        <div class="pay-amount-desc">
+          추천해드리밍에서 입력해 주신 포인트 기준으로 결제가 진행됩니다.
+        </div>
+      </section>
+
+      <!-- 결제 수단 선택 -->
+      <section class="pay-methods-card">
+        <div class="pay-section-title">결제 수단 선택</div>
+
+        <form id="pay-form" class="pay-methods">
+          <label class="pay-method">
+            <div class="pay-method-left">
+              <input type="radio" name="method" value="card" />
+              <span class="pay-method-name">신용·체크카드</span>
+            </div>
+            <span class="pay-method-extra">일시불 / 할부</span>
+          </label>
+
+          <label class="pay-method">
+            <div class="pay-method-left">
+              <input type="radio" name="method" value="account" />
+              <span class="pay-method-name">계좌이체</span>
+            </div>
+            <span class="pay-method-extra">공용 안심결제</span>
+          </label>
+
+          <label class="pay-method">
+            <div class="pay-method-left">
+              <input type="radio" name="method" value="kakao" />
+              <span class="pay-method-name">카카오페이</span>
+            </div>
+            <span class="pay-method-extra">간편결제</span>
+          </label>
+
+          <label class="pay-method">
+            <div class="pay-method-left">
+              <input type="radio" name="method" value="naver" />
+              <span class="pay-method-name">네이버페이</span>
+            </div>
+            <span class="pay-method-extra">포인트 적립</span>
+          </label>
+
+          <label class="pay-method">
+            <div class="pay-method-left">
+              <input type="radio" name="method" value="toss" />
+              <span class="pay-method-name">토스페이</span>
+            </div>
+            <span class="pay-method-extra">간편 송금</span>
+          </label>
+
+          <!-- 마지막 여백용 더미 -->
+          <div class="pay-method-spacer"></div>
+        </form>
+      </section>
+    </main>
+
+    <!-- 하단 결제 버튼 -->
+    <button class="pay-submit-button" id="pay-submit">
+      결제하기
+    </button>
+  </div>
+
+  <script>
+    // 1) 추천해드리밍에서 저장해 둔 포인트 가져오기
+    const amountSpan = document.getElementById("pay-amount");
+    const storedAmount = localStorage.getItem("donationAmount") || "0";
+
+    // 간단한 세 자리 콤마 추가
+    function formatNumber(str) {
+      return str.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    amountSpan.textContent = formatNumber(storedAmount);
+
+    // 2) 결제 수단 선택/결제 버튼 동작
+    const payButton = document.getElementById("pay-submit");
+    const payForm = document.getElementById("pay-form");
+
+    payButton.addEventListener("click", function () {
+      const selected = payForm.querySelector("input[name='method']:checked");
+      if (!selected) {
+        alert("결제 수단을 선택해 주세요.");
+        return;
+      }
+
+      const method = selected.value;
+      const prettyAmount = formatNumber(storedAmount);
+
+      // 해커톤용 데모: 실제 결제 대신 알림 + 홈 이동
+      alert(
+        `해커톤 데모용 안내\n\n` +
+        `선택한 결제 수단: ${method}\n` +
+        `결제 금액: ${prettyAmount} 포인트\n\n` +
+        `실제 결제는 진행되지 않습니다.`
+      );
+
+      // 결제 완료 후 홈으로 이동 (또는 '결제 완료' 화면으로 이동해도 됨)
+      window.location.href = "home.html";
+    });
+  </script>
+</body>
+</html>
