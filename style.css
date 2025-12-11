@@ -689,3 +689,287 @@ body {
 .pay-submit-button:hover {
   opacity: 0.95;
 }
+/* --------- 결제 화면 (사줄게요) --------- */
+
+.payment-screen {
+  padding: 56px 16px 80px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 헤더 */
+.payment-header {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.payment-header .back {
+  position: absolute;
+  left: 0;
+  font-size: 22px;
+  text-decoration: none;
+  color: #111827;
+}
+
+/* 본문 */
+.payment-body {
+  margin-top: 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 공통 카드 */
+.pay-card {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 12px 14px;
+}
+
+/* 카드 제목 */
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* 주문 요약 */
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.order-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.order-value {
+  font-size: 12px;
+  color: #111827;
+}
+
+.order-total {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.order-total-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* 마일리지 카드 */
+.mileage-card {
+  padding-top: 10px;
+  padding-bottom: 4px;
+}
+
+.mileage-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.mileage-detail-row {
+  margin-top: 6px;
+  width: 100%;
+  border: none;
+  background: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+/* 결제 수단 카드 */
+.method-card {
+  padding-bottom: 10px;
+}
+
+.pay-method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pay-method-option {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 10px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.pay-method-option .pay-method-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pay-method-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.pay-method-text {
+  text-align: left;
+}
+
+.pay-method-name {
+  font-size: 13px;
+  color: #111827;
+}
+
+.pay-method-sub {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.pay-method-check {
+  font-size: 12px;
+  color: #2563eb;
+}
+
+/* 선택된 결제 수단 */
+.pay-method-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+/* 마일리지 사용 영역 */
+.pay-mileage-use {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 10px 8px;
+  margin-top: 2px;
+}
+
+.pay-mileage-use-header {
+  margin-bottom: 4px;
+}
+
+.pay-mileage-use-body {
+  font-size: 11px;
+}
+
+.pay-mileage-input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.pay-mileage-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pay-mileage-input {
+  width: 80px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+  text-align: right;
+}
+
+.pay-mileage-unit {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pay-mileage-all {
+  margin-left: auto;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.pay-mileage-all:hover {
+  background: #e5e7eb;
+}
+
+/* 마일리지 사용 바 */
+.pay-mileage-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.pay-mileage-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #3b82f6;
+}
+
+/* 응원 메시지 */
+.message-card {
+  padding-bottom: 10px;
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 80px;
+  margin-top: 6px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  font-size: 12px;
+  resize: none;
+}
+
+/* 하단 결제 버튼 */
+.payment-submit-button {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  height: 46px;
+  border-radius: 999px;
+  border: none;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-submit-button:hover {
+  opacity: 0.96;
+}
