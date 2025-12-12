@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>기부 완료</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="screen">
+
+    <div class="center" style="margin-top: 100px;">
+      <div style="font-size: 48px;">🎉</div>
+      <h2 style="margin-top: 16px;">기부가 완료되었습니다</h2>
+      <p style="margin-top: 8px; color: #666;">
+        당신의 선택이 아이들에게 큰 힘이 되었어요
+      </p>
+    </div>
+
+    <!-- 기부 결과 요약 -->
+    <section class="pay-card" style="margin-top: 32px;">
+      <div class="order-row">
+        <span class="order-label">기부 품목</span>
+        <span class="order-value" id="result-item">-</span>
+      </div>
+
+      <div class="order-row">
+        <span class="order-label">결제 수단</span>
+        <span class="order-value" id="result-method">-</span>
+      </div>
+
+      <div class="order-row order-total">
+        <span class="order-label">기부 금액</span>
+        <span class="order-total-value" id="result-amount">0원</span>
+      </div>
+    </section>
+
+    <!-- 버튼 -->
+    <button
+      class="btn-primary"
+      style="margin-top: 28px;"
+      onclick="location.href='home.html'"
+    >
+      홈으로 돌아가기
+    </button>
+
+  </div>
+
+  <script>
+    // payment.html에서 저장한 값 불러오기
+    const item   = localStorage.getItem("pay_item")   || "알 수 없음";
+    const method = localStorage.getItem("pay_method") || "알 수 없음";
+    const amount = localStorage.getItem("pay_amount") || "0";
+
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    document.getElementById("result-item").textContent   = item;
+    document.getElementById("result-method").textContent = method;
+    document.getElementById("result-amount").textContent =
+      formatNumber(amount) + "원";
+  </script>
+
+</body>
+</html>
 
