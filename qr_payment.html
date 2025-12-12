@@ -1,1 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>QR결제</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* QR 결제 화면 전용 */
+    .qr-screen {
+      padding: 56px 16px 32px;
+      text-align: center;
+    }
+
+    .qr-header {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-header .back {
+      position: absolute;
+      left: 0;
+      font-size: 22px;
+      text-decoration: none;
+      color: #111;
+    }
+
+    .qr-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .qr-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin: 16px 0 24px;
+    }
+
+    .qr-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .qr-info div {
+      font-size: 13px;
+      color: #374151;
+    }
+
+    .qr-info strong {
+      display: block;
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+      margin-top: 4px;
+    }
+
+    .qr-image {
+      width: 220px;
+      height: 220px;
+      margin: 0 auto 20px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-image img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .qr-timer {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+      margin-top: 12px;
+    }
+
+    .qr-footer {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="screen qr-screen">
+
+    <!-- 상단 헤더 -->
+    <div class="qr-header">
+      <a href="home.html" class="back">‹</a>
+      <h1 class="qr-title">QR결제</h1>
+    </div>
+
+    <!-- 설명 -->
+    <p class="qr-desc">매장 카운터에 QR코드를 보여주세요</p>
+
+    <!-- 결제 정보 -->
+    <div class="qr-info">
+      <div>
+        결제금액
+        <strong id="pay-amount">6,500원</strong>
+      </div>
+      <div>
+        매장
+        <strong id="store-name">파스쿠찌</strong>
+      </div>
+    </div>
+
+    <!-- QR 이미지 -->
+    <div class="qr-image">
+      <!-- 실제 QR 이미지 경로 -->
+      <img src="qr_sample.png" alt="QR Code" />
+    </div>
+
+    <!-- 타이머 -->
+    <div class="qr-timer">
+      유효기간 : <span id="timer">00:30</span>
+    </div>
+
+    <!-- 하단 안내 -->
+    <div class="qr-footer">
+      문제가 있나요? 고객센터 연결
+    </div>
+
+  </div>
+
+  <!-- ⏱ 30초 타이머 스크립트 -->
+  <script>
+    let remainingTime = 30;
+    const timerEl = document.getElementById("timer");
+
+    const countdown = setInterval(() => {
+      remainingTime--;
+
+      const seconds = remainingTime < 10 ? "0" + remainingTime : remainingTime;
+      timerEl.textContent = `00:${seconds}`;
+
+      if (remainingTime <= 0) {
+        clearInterval(countdown);
+        // ⏭ 결제 완료 화면으로 이동
+        window.location.href = "payment_success.html";
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
 
