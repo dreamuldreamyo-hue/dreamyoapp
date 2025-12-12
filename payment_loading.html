@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>결제 진행 중</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="screen center">
+    <h2>결제 진행 중이에요…</h2>
+    <p style="margin-top: 12px; color: #666;">
+      결제를 안전하게 처리하고 있어요
+    </p>
+
+    <div style="margin-top: 40px; font-size: 32px;">⏳</div>
+  </div>
+
+  <script>
+    // 1. 실제 서비스라면 여기서 PG 승인 요청
+    // 2. 지금은 해커톤용이므로 1.5초 후 성공 처리
+    setTimeout(() => {
+      window.location.href = "payment_success.html";
+    }, 1500);
+  </script>
+</body>
+</html>
