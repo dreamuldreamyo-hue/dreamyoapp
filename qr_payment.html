@@ -6,153 +6,161 @@
   <title>QR결제</title>
   <link rel="stylesheet" href="style.css" />
 
+  <!-- ✅ QR 자동 생성 라이브러리 (이미지 파일 필요 없음) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
   <style>
-    /* QR 결제 화면 전용 */
-    .qr-screen {
-      padding: 56px 16px 32px;
-      text-align: center;
+    .qr-screen{ padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
+
+    .qr-header{
+      height: 44px; display:flex; align-items:center; justify-content:center;
+      position:relative; margin-bottom:8px;
+    }
+    .qr-back{
+      position:absolute; left:0; top:50%; transform:translateY(-50%);
+      font-size:22px; text-decoration:none; color:#111;
+      padding:6px 8px; border-radius:10px;
+    }
+    .qr-title{ font-size:17px; font-weight:700; margin:0; color:#111; }
+
+    .qr-instruction{
+      text-align:center; font-size:12px; color:#6b7280;
+      margin:10px 0 18px;
     }
 
-    .qr-header {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      right: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .qr-summary{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      padding:8px 2px 14px; border-bottom:1px solid #e5e7eb; margin-bottom:18px;
+    }
+    .qr-col{ display:flex; flex-direction:column; gap:6px; }
+    .qr-col.right{ text-align:right; align-items:flex-end; }
+    .qr-label{ font-size:12px; color:#6b7280; }
+    .qr-value{
+      font-size:26px; font-weight:800; color:#111; line-height:1;
+      letter-spacing:-0.4px;
+    }
+    .qr-value.small{ font-size:20px; font-weight:800; }
+
+    .qr-center{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:14px; padding:22px 0 10px; min-height:420px;
     }
 
-    .qr-header .back {
-      position: absolute;
-      left: 0;
-      font-size: 22px;
-      text-decoration: none;
-      color: #111;
-    }
-
-    .qr-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .qr-desc {
-      font-size: 13px;
-      color: #6b7280;
-      margin: 16px 0 24px;
-    }
-
-    .qr-info {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 24px;
-      text-align: left;
-    }
-
-    .qr-info div {
-      font-size: 13px;
-      color: #374151;
-    }
-
-    .qr-info strong {
-      display: block;
-      font-size: 18px;
-      font-weight: 700;
-      color: #111;
-      margin-top: 4px;
-    }
-
-    .qr-image {
+    /* ✅ QR이 들어갈 박스 */
+    .qr-box{
       width: 220px;
       height: 220px;
-      margin: 0 auto 20px;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: grid;
+      place-items: center;
+    }
+    /* qrcodejs가 만든 img/canvas가 자동으로 들어옴 */
+    .qr-box img, .qr-box canvas{
+      width: 220px !important;
+      height: 220px !important;
+      display:block;
     }
 
-    .qr-image img {
-      width: 100%;
-      height: 100%;
+    .qr-timer{
+      margin-top:6px; font-size:28px; font-weight:900; color:#111;
+      letter-spacing:-0.2px;
     }
 
-    .qr-timer {
-      font-size: 18px;
-      font-weight: 700;
-      color: #111;
-      margin-top: 12px;
-    }
-
-    .qr-footer {
-      margin-top: 24px;
-      font-size: 12px;
-      color: #9ca3af;
+    .qr-help{ text-align:center; font-size:12px; color:#9ca3af; margin-top:12px; }
+    .qr-help a{
+      color:#9ca3af; text-decoration:none;
+      border-bottom:1px solid rgba(156,163,175,0.35); padding-bottom:1px;
     }
   </style>
 </head>
 
 <body>
   <div class="screen qr-screen">
-
-    <!-- 상단 헤더 -->
-    <div class="qr-header">
-      <a href="home.html" class="back">‹</a>
+    <header class="qr-header">
+      <a class="qr-back" href="home.html">‹</a>
       <h1 class="qr-title">QR결제</h1>
-    </div>
+    </header>
 
-    <!-- 설명 -->
-    <p class="qr-desc">매장 카운터에 QR코드를 보여주세요</p>
+    <div class="qr-instruction">매장 카운터에 QR코드를 보여주세요</div>
 
-    <!-- 결제 정보 -->
-    <div class="qr-info">
-      <div>
-        결제금액
-        <strong id="pay-amount">6,500원</strong>
+    <section class="qr-summary">
+      <div class="qr-col">
+        <div class="qr-label">결제금액</div>
+        <div class="qr-value" id="qr-amount">0원</div>
       </div>
-      <div>
-        매장
-        <strong id="store-name">파스쿠찌</strong>
+
+      <div class="qr-col right">
+        <div class="qr-label">매장</div>
+        <div class="qr-value small" id="qr-store">-</div>
       </div>
-    </div>
+    </section>
 
-    <!-- QR 이미지 -->
-    <div class="qr-image">
-      <!-- 실제 QR 이미지 경로 -->
-      <img src="qr_sample.png" alt="QR Code" />
-    </div>
+    <main class="qr-center">
+      <!-- ✅ 여기 div 안에 QR이 자동 생성됨 -->
+      <div class="qr-box" id="qr-box"></div>
 
-    <!-- 타이머 -->
-    <div class="qr-timer">
-      유효기간 : <span id="timer">00:30</span>
-    </div>
+      <div class="qr-timer" id="qr-timer">유효기간 : 00:30</div>
 
-    <!-- 하단 안내 -->
-    <div class="qr-footer">
-      문제가 있나요? 고객센터 연결
-    </div>
-
+      <div class="qr-help">
+        문제가 있나요? <a href="#">고객센터 연결</a>
+      </div>
+    </main>
   </div>
 
-  <!-- ⏱ 30초 타이머 스크립트 -->
   <script>
-    let remainingTime = 30;
-    const timerEl = document.getElementById("timer");
+    // ---------- 1) 저장된 값 읽어서 화면에 반영 ----------
+    const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
+    const storeName = localStorage.getItem("qr_store") || "파스쿠찌";
 
-    const countdown = setInterval(() => {
-      remainingTime--;
+    function formatKRW(n){
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "원";
+    }
 
-      const seconds = remainingTime < 10 ? "0" + remainingTime : remainingTime;
-      timerEl.textContent = `00:${seconds}`;
+    document.getElementById("qr-amount").textContent = formatKRW(amount);
+    document.getElementById("qr-store").textContent = storeName;
 
-      if (remainingTime <= 0) {
-        clearInterval(countdown);
-        // ⏭ 결제 완료 화면으로 이동
+    // ---------- 2) QR 내용(문자열) 만들기 ----------
+    // 실제 결제 QR 규격이 아니라 "데모용 QR"로, 결제정보를 담아줌
+    const payload = JSON.stringify({
+      app: "Dreamyo",
+      type: "QR_PAYMENT",
+      amount,
+      store: storeName,
+      ts: Date.now()
+    });
+
+    // ---------- 3) QR 자동 생성 ----------
+    const qrBox = document.getElementById("qr-box");
+    qrBox.innerHTML = ""; // 혹시 남아있으면 제거
+
+    new QRCode(qrBox, {
+      text: payload,
+      width: 220,
+      height: 220,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // ---------- 4) 30초 타이머 실제 감소 + 만료 시 이동 ----------
+    let remain = 30;
+    const timerEl = document.getElementById("qr-timer");
+
+    function renderTimer(){
+      const ss = String(remain).padStart(2, "0");
+      timerEl.textContent = `유효기간 : 00:${ss}`;
+    }
+    renderTimer();
+
+    const tick = setInterval(() => {
+      remain -= 1;
+      if (remain <= 0) {
+        clearInterval(tick);
+        // ✅ 만료되면 결제 완료 화면으로 (원하면 만료 화면으로 바꿔도 됨)
         window.location.href = "payment_success.html";
+        return;
       }
+      renderTimer();
     }, 1000);
   </script>
 </body>
 </html>
+
 
