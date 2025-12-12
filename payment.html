@@ -211,28 +211,107 @@
       const usedMileage = parseInt(mileageInput.value || "0", 10);
       const finalAmount = Math.max(amount - usedMileage, 0);
 
-      
-  </script>
+        <!-- ✅ 토스 결제위젯 SDK는 script 안이 아니라, 이렇게 따로! -->
   <script src="https://js.tosspayments.com/v2/standard"></script>
 
+  <script>
+    // --- 1. 추천해드리밍에서 넘어온 데이터 읽기 ---
+    const storedItem   = localStorage.getItem("donationItem")   || "선택한 품목 없음";
+    const storedAmount = localStorage.getItem("donationAmount") || "0";
+    const amount = parseInt(storedAmount, 10) || 0;
 
-submitBtn.addEventListener("click", () => {
-  const usedMileage = parseInt(mileageInput.value || "0", 10);
-  const finalAmount = Math.max(amount - usedMileage, 0);
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
 
-  if (finalAmount <= 0) {
-    alert("결제 금액이 0원입니다.");
-    return;
-  }
+    const payItemEl       = document.getElementById("pay-item");
+    const payTotalEl      = document.getElementById("pay-total");
+    const payMileageEl    = document.getElementById("pay-mileage");
+    const payButtonLabel  = document.getElementById("payment-submit-label");
+    const mileageInput    = document.getElementById("mileage-input");
+    const mileageAllBtn   = document.getElementById("mileage-all");
+    const mileageBarFill  = document.getElementById("mileage-bar-fill");
 
-  // 결제 정보 저장
-  localStorage.setItem("pay_item", storedItem);
-  localStorage.setItem("pay_method", selectedMethod);
-  localStorage.setItem("pay_amount", finalAmount.toString());
+    // 화면에 값 반영
+    payItemEl.textContent    = storedItem;
+    payTotalEl.textContent   = formatNumber(amount) + "원";
+    payMileageEl.textContent = formatNumber(amount) + "P";
+    payButtonLabel.textContent = formatNumber(amount) + "원 결제";
 
-  // 결제 진행 중 화면으로 이동
-  window.location.href = "payment_loading.html";
-});
+    mileageInput.max = amount;
+    mileageInput.value = 0;
+    mileageBarFill.style.width = "0%";
 
+    function getUsedMileage() {
+      return parseInt(mileageInput.value || "0", 10) || 0;
+    }
+
+    function getFinalAmount() {
+      return Math.max(amount - getUsedMileage(), 0);
+    }
+
+    function updateMileageBar() {
+      const used = getUsedMileage();
+      const ratio = amount > 0 ? Math.min(used / amount, 1) : 0;
+      mileageBarFill.style.width = ratio * 100 + "%";
+      payButtonLabel.textContent = formatNumber(getFinalAmount()) + "원 결제";
+    }
+
+    mileageInput.addEventListener("input", () => {
+      if (getUsedMileage() > amount) mileageInput.value = amount;
+      updateMileageBar();
+    });
+
+    mileageAllBtn.addEventListener("click", () => {
+      mileageInput.value = amount;
+      updateMileageBar();
+    });
+
+    // --- 2. 결제 수단 선택 ---
+    const methodList = document.getElementById("pay-method-list");
+    let selectedMethod = "신용카드";
+
+    methodList.addEventListener("click", (e) => {
+      const option = e.target.closest(".pay-method-option");
+      if (!option) return;
+
+      document.querySelectorAll(".pay-method-option").forEach((el) => {
+        el.classList.remove("selected");
+        const check = el.querySelector(".pay-method-check");
+        if (check) check.remove();
+      });
+
+      option.classList.add("selected");
+      selectedMethod = option.dataset.method || "신용카드";
+
+      // 체크 표시(✔)를 선택된 것만 보이게(카드처럼)
+      if (!option.querySelector(".pay-method-check")) {
+        const check = document.createElement("div");
+        check.className = "pay-method-check";
+        check.textContent = "✔";
+        option.appendChild(check);
+      }
+    });
+
+    // --- 3. 결제 버튼: 결제 진행 중 화면으로 이동 ---
+    const submitBtn = document.getElementById("payment-submit");
+
+    submitBtn.addEventListener("click", () => {
+      const finalAmount = getFinalAmount();
+
+      if (finalAmount <= 0) {
+        alert("결제 금액이 0원입니다.");
+        return;
+      }
+
+      // 결제 정보 저장(다음 화면에서 읽기)
+      localStorage.setItem("pay_item", storedItem);
+      localStorage.setItem("pay_method", selectedMethod);
+      localStorage.setItem("pay_amount", finalAmount.toString());
+
+      // 결제 진행 중 화면으로 이동
+      window.location.href = "payment_loading.html";
+    });
+  </script>
 </body>
 </html>
