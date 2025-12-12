@@ -866,3 +866,25 @@ body {
   border-color: #3e63ff;
   background: #eff6ff;
 }
+/* ===== 로고 이미지 공통 ===== */
+.logo-img {
+  display: block;
+  height: auto;
+}
+
+/* 시작(로그인 전) 중앙 로고 크게 */
+.logo-img.start {
+  width: 180px;
+  margin: 0 auto;
+}
+
+/* 로그인/회원가입 중앙 로고 */
+.logo-img.auth {
+  width: 160px;
+  margin: 0 auto 8px;
+}
+
+/* 홈 왼쪽 상단 로고 작게 */
+.logo-img.home {
+  width: 58px;
+}
