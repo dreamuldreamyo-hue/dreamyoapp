@@ -209,3 +209,17 @@
   <!-- 아이폰 하단 바(검은 줄) -->
   <div class="home-indicator" aria-hidden="true"></div>
 </nav>
+<script>
+  document.getElementById("go-qr").addEventListener("click", () => {
+    // ✅ 여기서 QR 화면에 넘길 값 저장
+    // 결제 완료 후 넘어가는 흐름이면 pay_amount를 이미 갖고 있을 수 있음
+    const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
+
+    // 매장명도 저장(원하면 다른 화면에서 바꿔 넣어도 됨)
+    localStorage.setItem("qr_store", "파스쿠찌");
+    localStorage.setItem("pay_amount", String(amount));
+
+    // QR 페이지로 이동
+    window.location.href = "qr_payment.html";
+  });
+</script>
