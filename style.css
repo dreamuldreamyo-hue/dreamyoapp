@@ -928,4 +928,74 @@ body {
   object-fit: cover;      /* 박스에 꽉 채우되 비율 유지 (넘치는 부분은 잘림) */
   display: block;
 }
+/* ===== Tab Bar (iOS style) ===== */
+.tabbar{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 0;
+  width: 375px;                 /* 너 screen이 375라서 맞춰둠 */
+  height: 88px;
+  background: #f1f1f1;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 10px 18px calc(18px + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  z-index: 999;
+}
+
+/* 각 탭 아이템(회색 아이콘 느낌) */
+.tab-item{
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: #444;
+  text-decoration: none;
+  font-size: 22px;
+  opacity: 0.9;
+}
+
+/* 활성 탭(살짝 진하게) */
+.tab-item.active{
+  opacity: 1;
+  color: #111;
+}
+
+/* 가운데 파란 원 버튼 */
+.tab-center{
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  border: 0;
+  background: #4f6cff;          /* 파란색 */
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.18);
+  transform: translateY(-18px); /* 위로 떠오르게 */
+  cursor: pointer;
+}
+
+/* 아이폰 하단 검은 줄 */
+.home-indicator{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 7px;
+  width: 140px;
+  height: 5px;
+  background: #111;
+  border-radius: 999px;
+  opacity: 0.9;
+}
+
+/* 탭바가 화면을 가리지 않게(홈 화면 본문 아래 여백) */
+.screen-home{
+  padding-bottom: 110px; /* 탭바 높이만큼 */
+}
 
