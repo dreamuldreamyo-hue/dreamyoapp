@@ -987,3 +987,16 @@ body {
   padding-bottom: 110px; /* 탭바 높이만큼 */
 }
 
+.qr-box{
+  width: 220px;
+  height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-img{
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+}
