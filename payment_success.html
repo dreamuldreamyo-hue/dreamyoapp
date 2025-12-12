@@ -2,40 +2,29 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>기부 완료</title>
+  <title>결제 완료</title>
   <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
-  <div class="screen" style="padding:72px 24px 32px;">
-    <h2 style="margin:0 0 12px;">✅ 기부가 완료됐어요!</h2>
-    <p style="margin:0 0 24px; color:#6b7280; font-size:13px;">
-      (해커톤 데모) 결제는 실제로 진행되지 않았고, 기부 기록만 저장되었습니다.
-    </p>
+  <div class="screen" style="padding-top: 80px;">
+    <div class="center">
+      <h2 style="margin:0; font-size:20px;">결제가 완료됐어요 ✅</h2>
+      <p id="summary" style="margin-top:10px; color:#6b7280; font-size:13px;"></p>
 
-    <div style="border:1px solid #e5e7eb; border-radius:16px; padding:14px;">
-      <div style="font-size:13px; color:#6b7280;">기부 품목</div>
-      <div id="done-item" style="font-size:16px; font-weight:700; margin-bottom:10px;"></div>
-
-      <div style="font-size:13px; color:#6b7280;">기부 금액</div>
-      <div id="done-amount" style="font-size:16px; font-weight:700; margin-bottom:10px;"></div>
-
-      <div style="font-size:13px; color:#6b7280;">결제 수단</div>
-      <div id="done-method" style="font-size:16px; font-weight:700;"></div>
+      <button class="btn-primary" style="margin-top:24px;" onclick="location.href='home.html'">
+        홈으로
+      </button>
     </div>
-
-    <button class="btn-primary" style="margin-top:18px;" onclick="location.href='home.html'">
-      홈으로
-    </button>
   </div>
 
   <script>
-    const item = localStorage.getItem("pay_item") || localStorage.getItem("donationItem") || "알 수 없음";
-    const method = localStorage.getItem("pay_method") || "알 수 없음";
-    const amount = parseInt(localStorage.getItem("pay_amount") || localStorage.getItem("donationAmount") || "0", 10);
+    const item = localStorage.getItem("pay_item") || "(품목 없음)";
+    const amount = localStorage.getItem("pay_amount") || "0";
+    const method = localStorage.getItem("pay_method") || "(수단 없음)";
 
-    document.getElementById("done-item").textContent = item;
-    document.getElementById("done-method").textContent = method;
-    document.getElementById("done-amount").textContent = (amount || 0).toLocaleString() + "원";
+    document.getElementById("summary").textContent =
+      `${item} / ${Number(amount).toLocaleString()}원 / ${method}`;
   </script>
 </body>
 </html>
