@@ -6,61 +6,36 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="screen">
+  <div class="screen" style="padding:72px 24px 32px;">
+    <h2 style="margin:0 0 12px;">✅ 기부가 완료됐어요!</h2>
+    <p style="margin:0 0 24px; color:#6b7280; font-size:13px;">
+      (해커톤 데모) 결제는 실제로 진행되지 않았고, 기부 기록만 저장되었습니다.
+    </p>
 
-    <div class="center" style="margin-top: 100px;">
-      <div style="font-size: 48px;">🎉</div>
-      <h2 style="margin-top: 16px;">기부가 완료되었습니다</h2>
-      <p style="margin-top: 8px; color: #666;">
-        당신의 선택이 아이들에게 큰 힘이 되었어요
-      </p>
+    <div style="border:1px solid #e5e7eb; border-radius:16px; padding:14px;">
+      <div style="font-size:13px; color:#6b7280;">기부 품목</div>
+      <div id="done-item" style="font-size:16px; font-weight:700; margin-bottom:10px;"></div>
+
+      <div style="font-size:13px; color:#6b7280;">기부 금액</div>
+      <div id="done-amount" style="font-size:16px; font-weight:700; margin-bottom:10px;"></div>
+
+      <div style="font-size:13px; color:#6b7280;">결제 수단</div>
+      <div id="done-method" style="font-size:16px; font-weight:700;"></div>
     </div>
 
-    <!-- 기부 결과 요약 -->
-    <section class="pay-card" style="margin-top: 32px;">
-      <div class="order-row">
-        <span class="order-label">기부 품목</span>
-        <span class="order-value" id="result-item">-</span>
-      </div>
-
-      <div class="order-row">
-        <span class="order-label">결제 수단</span>
-        <span class="order-value" id="result-method">-</span>
-      </div>
-
-      <div class="order-row order-total">
-        <span class="order-label">기부 금액</span>
-        <span class="order-total-value" id="result-amount">0원</span>
-      </div>
-    </section>
-
-    <!-- 버튼 -->
-    <button
-      class="btn-primary"
-      style="margin-top: 28px;"
-      onclick="location.href='home.html'"
-    >
-      홈으로 돌아가기
+    <button class="btn-primary" style="margin-top:18px;" onclick="location.href='home.html'">
+      홈으로
     </button>
-
   </div>
 
   <script>
-    // payment.html에서 저장한 값 불러오기
-    const item   = localStorage.getItem("pay_item")   || "알 수 없음";
+    const item = localStorage.getItem("pay_item") || localStorage.getItem("donationItem") || "알 수 없음";
     const method = localStorage.getItem("pay_method") || "알 수 없음";
-    const amount = localStorage.getItem("pay_amount") || "0";
+    const amount = parseInt(localStorage.getItem("pay_amount") || localStorage.getItem("donationAmount") || "0", 10);
 
-    function formatNumber(num) {
-      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-    }
-
-    document.getElementById("result-item").textContent   = item;
-    document.getElementById("result-method").textContent = method;
-    document.getElementById("result-amount").textContent =
-      formatNumber(amount) + "원";
+    document.getElementById("done-item").textContent = item;
+    document.getElementById("done-method").textContent = method;
+    document.getElementById("done-amount").textContent = (amount || 0).toLocaleString() + "원";
   </script>
-
 </body>
 </html>
-
