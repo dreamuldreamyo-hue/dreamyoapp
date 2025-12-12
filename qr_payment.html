@@ -6,9 +6,6 @@
   <title>QR결제</title>
   <link rel="stylesheet" href="style.css" />
 
-  <!-- ✅ QR 자동 생성 라이브러리 (이미지 파일 필요 없음) -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-
   <style>
     .qr-screen{ padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); }
 
@@ -46,16 +43,19 @@
       gap:14px; padding:22px 0 10px; min-height:420px;
     }
 
-    /* ✅ QR이 들어갈 박스 */
+    /* ✅ QR 박스 + 이미지 */
     .qr-box{
       width: 220px;
       height: 220px;
       display: grid;
       place-items: center;
-   <div class="qr-box">
-  <img src="qrdemo.png" alt="QR Code" class="qr-img">
-</div>
-
+    }
+    .qr-img{
+      width: 220px;
+      height: 220px;
+      object-fit: contain;
+      display: block;
+    }
 
     .qr-timer{
       margin-top:6px; font-size:28px; font-weight:900; color:#111;
@@ -92,8 +92,10 @@
     </section>
 
     <main class="qr-center">
-      <!-- ✅ 여기 div 안에 QR이 자동 생성됨 -->
-      <div class="qr-box" id="qr-box"></div>
+      <!-- ✅ QR 이미지를 직접 표시 -->
+      <div class="qr-box">
+        <img src="qrdemo.png" alt="QR Code" class="qr-img">
+      </div>
 
       <div class="qr-timer" id="qr-timer">유효기간 : 00:30</div>
 
@@ -106,7 +108,13 @@
   <script>
     // ---------- 1) 저장된 값 읽어서 화면에 반영 ----------
     const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
-    const storeName = localStorage.getItem("qr_store") || "파스쿠찌";
+
+    // ✅ 매장명: 결제 페이지에서 저장한 값을 그대로 쓰는 걸 추천
+    // (없으면 임시로 파스쿠찌)
+    const storeName =
+      localStorage.getItem("pay_store") ||
+      localStorage.getItem("qr_store") ||
+      "파스쿠찌";
 
     function formatKRW(n){
       return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + "원";
@@ -115,28 +123,7 @@
     document.getElementById("qr-amount").textContent = formatKRW(amount);
     document.getElementById("qr-store").textContent = storeName;
 
-    // ---------- 2) QR 내용(문자열) 만들기 ----------
-    // 실제 결제 QR 규격이 아니라 "데모용 QR"로, 결제정보를 담아줌
-    const payload = JSON.stringify({
-      app: "Dreamyo",
-      type: "QR_PAYMENT",
-      amount,
-      store: storeName,
-      ts: Date.now()
-    });
-
-    // ---------- 3) QR 자동 생성 ----------
-    const qrBox = document.getElementById("qr-box");
-    qrBox.innerHTML = ""; // 혹시 남아있으면 제거
-
-    new QRCode(qrBox, {
-      text: payload,
-      width: 220,
-      height: 220,
-      correctLevel: QRCode.CorrectLevel.M
-    });
-
-    // ---------- 4) 30초 타이머 실제 감소 + 만료 시 이동 ----------
+    // ---------- 2) 30초 타이머 실제 감소 + 만료 시 이동 ----------
     let remain = 30;
     const timerEl = document.getElementById("qr-timer");
 
@@ -150,7 +137,6 @@
       remain -= 1;
       if (remain <= 0) {
         clearInterval(tick);
-        // ✅ 만료되면 결제 완료 화면으로 (원하면 만료 화면으로 바꿔도 됨)
         window.location.href = "payment_success.html";
         return;
       }
@@ -159,5 +145,6 @@
   </script>
 </body>
 </html>
+
 
 
