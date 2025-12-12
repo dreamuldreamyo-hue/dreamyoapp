@@ -313,5 +313,29 @@
       window.location.href = "payment_loading.html";
     });
   </script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "네_API_KEY",
+    authDomain: "dreamyo-e42bb.firebaseapp.com",
+    projectId: "dreamyo-e42bb",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.saveDonation = async function ({ item, amount, method }) {
+    await addDoc(collection(db, "donations"), {
+      userId: "testUser", // 지금은 데모
+      item,
+      amount,
+      method,
+      createdAt: serverTimestamp(),
+    });
+  };
+</script>
+
 </body>
 </html>
