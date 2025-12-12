@@ -13,16 +13,27 @@ body {
   min-height: 100vh;
 }
 
-/* 공통 화면 틀 (아이폰 화면 느낌) */
+/* 공통 화면 틀 (모바일에 딱 맞게 + PC에서는 아이폰 프레임처럼) */
 .screen {
-  width: 375px;
-  min-height: 812px;
+  width: 100%;
+  min-height: 100vh;
   background: #ffffff;
-  border-radius: 28px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-  padding: 72px 24px 32px; /* 위에 상태바 여백 포함 */
   position: relative;
+  box-sizing: border-box;
+  padding: 72px 24px 32px; /* 위에 상태바 여백 포함 */
 }
+
+/* PC/태블릿에서는 아이폰 프레임 느낌 유지 */
+@media (min-width: 480px) {
+  .screen {
+    max-width: 375px;
+    min-height: 812px;
+    margin: 16px auto;
+    border-radius: 28px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  }
+}
+
 
 /* 로고 텍스트 */
 .logo {
