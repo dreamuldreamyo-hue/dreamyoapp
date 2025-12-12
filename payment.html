@@ -120,6 +120,10 @@
             </div>
           </div>
         </div>
+        <!-- ✅ 토스 결제위젯이 렌더링될 자리 -->
+<div id="toss-payment-methods" style="display:none; margin-top: 12px;"></div>
+<div id="toss-agreement" style="display:none; margin-top: 10px;"></div>
+
       </section>
 
       <!-- 응원 메시지 카드 -->
@@ -207,20 +211,28 @@
       const usedMileage = parseInt(mileageInput.value || "0", 10);
       const finalAmount = Math.max(amount - usedMileage, 0);
 
-      alert(
-        "해커톤 데모용 결제입니다.\n\n" +
-          "기부 품목: " + storedItem + "\n" +
-          "결제 수단: " + selectedMethod + "\n" +
-          "기부 예정 금액: " + formatNumber(amount) + "원\n" +
-          "사용 마일리지: " + formatNumber(usedMileage) + "P\n" +
-          "실제 결제 금액(마일리지 차감 후): " + formatNumber(finalAmount) +
-          "원\n\n실제 결제는 이루어지지 않습니다."
-      );
-
-      // 데모용: 결제 후 홈으로 이동
-      window.location.href = "home.html";
-    });
+      
   </script>
+  <script src="https://js.tosspayments.com/v2/standard"></script>
+
+
+submitBtn.addEventListener("click", () => {
+  const usedMileage = parseInt(mileageInput.value || "0", 10);
+  const finalAmount = Math.max(amount - usedMileage, 0);
+
+  if (finalAmount <= 0) {
+    alert("결제 금액이 0원입니다.");
+    return;
+  }
+
+  // 결제 정보 저장
+  localStorage.setItem("pay_item", storedItem);
+  localStorage.setItem("pay_method", selectedMethod);
+  localStorage.setItem("pay_amount", finalAmount.toString());
+
+  // 결제 진행 중 화면으로 이동
+  window.location.href = "payment_loading.html";
+});
+
 </body>
 </html>
-
