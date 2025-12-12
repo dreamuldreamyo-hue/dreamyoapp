@@ -4,61 +4,37 @@
   <meta charset="UTF-8" />
   <title>결제 진행중</title>
   <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
-  <div class="screen" style="display:flex; align-items:center; justify-content:center; flex-direction:column;">
-    <div style="font-size:18px; font-weight:700;">결제 진행중...</div>
-    <div style="margin-top:10px; font-size:13px; color:#6b7280;">잠시만 기다려 주세요</div>
+  <div class="screen center" style="padding-top: 120px;">
+    <h2 style="margin:0; font-size:18px;">결제 진행중...</h2>
+    <p style="margin-top:8px; color:#6b7280; font-size:13px;">잠시만 기다려 주세요</p>
+
+    <p id="debug" style="margin-top:16px; font-size:12px; color:#9ca3af;"></p>
   </div>
 
-  <script type="module">
-    import { db, auth } from "./firebase-init.js";
-    import {
-      addDoc,
-      collection,
-      serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
-    import {
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+  <script>
+    // ✅ 로딩 페이지에 들어오면 1.2초 뒤 성공 페이지로 이동
+    // (GitHub Pages에서 가장 안정적인 방식)
+    const item = localStorage.getItem("pay_item");
+    const amount = localStorage.getItem("pay_amount");
+    const method = localStorage.getItem("pay_method");
 
-    // payment.html에서 저장해둔 값 읽기
-    const item = localStorage.getItem("pay_item") || localStorage.getItem("donationItem") || "알 수 없음";
-    const method = localStorage.getItem("pay_method") || "알 수 없음";
-    const amount = parseInt(localStorage.getItem("pay_amount") || localStorage.getItem("donationAmount") || "0", 10);
+    const debugEl = document.getElementById("debug");
+    debugEl.textContent = `이동 준비중... (${item || "no item"} / ${amount || "0"} / ${method || "no method"})`;
 
-    if (!amount || amount <= 0) {
-      alert("결제 금액이 올바르지 않습니다.");
-      window.location.href = "payment.html";
-    }
+    // 파일이 진짜 있는지 확인하려면 아래 URL을 콘솔로 찍어봐도 됨
+    console.log("Redirecting to:", "payment_success.html");
 
-    // 로그인 사용자 기다렸다가 저장 (로그인 안 되어 있어도 저장은 가능하게 하려면 uid 없이 저장 가능)
-    onAuthStateChanged(auth, async (user) => {
-      try {
-        const docRef = await addDoc(collection(db, "donations"), {
-          itemName: item,
-          amount: amount,
-          payMethod: method,
-          status: "paid_demo",      // 실제 결제가 아니라 데모 표시
-          userUid: user ? user.uid : null,
-          userEmail: user ? user.email : null,
-          createdAt: serverTimestamp()
-        });
+    setTimeout(() => {
+      // ✅ 절대경로로도 한 번 더 안전하게 처리 (레포/폴더 구조 때문)
+      // dreamyoapp 폴더 안에 있다면 이게 더 안전함:
+      // location.href = "./payment_success.html";
 
-        // 성공 시: 저장된 문서 id도 넘겨주기
-        localStorage.setItem("donation_doc_id", docRef.id);
-
-        // 1초 정도 로딩 후 성공 페이지로
-        setTimeout(() => {
-          window.location.href = "payment_success.html";
-        }, 900);
-
-      } catch (err) {
-        console.error(err);
-        alert("기부 기록 저장 실패: " + err.message);
-        window.location.href = "payment.html";
-      }
-    });
+      location.href = "payment_success.html";
+    }, 1200);
   </script>
 </body>
 </html>
+
