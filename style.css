@@ -899,3 +899,19 @@ body {
 .logo-img.home {
   width: 58px;
 }
+/* 📱 모바일에서는 화면 꽉 차게 */
+@media (max-width: 480px) {
+  body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .screen {
+    width: 100vw;
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  }
+}
