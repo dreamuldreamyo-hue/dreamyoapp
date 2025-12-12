@@ -2,25 +2,63 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>결제 진행 중</title>
+  <title>결제 진행중</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="screen center">
-    <h2>결제 진행 중이에요…</h2>
-    <p style="margin-top: 12px; color: #666;">
-      결제를 안전하게 처리하고 있어요
-    </p>
-
-    <div style="margin-top: 40px; font-size: 32px;">⏳</div>
+  <div class="screen" style="display:flex; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="font-size:18px; font-weight:700;">결제 진행중...</div>
+    <div style="margin-top:10px; font-size:13px; color:#6b7280;">잠시만 기다려 주세요</div>
   </div>
 
-  <script>
-    // 1. 실제 서비스라면 여기서 PG 승인 요청
-    // 2. 지금은 해커톤용이므로 1.5초 후 성공 처리
-    setTimeout(() => {
-      window.location.href = "payment_success.html";
-    }, 1500);
+  <script type="module">
+    import { db, auth } from "./firebase-init.js";
+    import {
+      addDoc,
+      collection,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+    import {
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+
+    // payment.html에서 저장해둔 값 읽기
+    const item = localStorage.getItem("pay_item") || localStorage.getItem("donationItem") || "알 수 없음";
+    const method = localStorage.getItem("pay_method") || "알 수 없음";
+    const amount = parseInt(localStorage.getItem("pay_amount") || localStorage.getItem("donationAmount") || "0", 10);
+
+    if (!amount || amount <= 0) {
+      alert("결제 금액이 올바르지 않습니다.");
+      window.location.href = "payment.html";
+    }
+
+    // 로그인 사용자 기다렸다가 저장 (로그인 안 되어 있어도 저장은 가능하게 하려면 uid 없이 저장 가능)
+    onAuthStateChanged(auth, async (user) => {
+      try {
+        const docRef = await addDoc(collection(db, "donations"), {
+          itemName: item,
+          amount: amount,
+          payMethod: method,
+          status: "paid_demo",      // 실제 결제가 아니라 데모 표시
+          userUid: user ? user.uid : null,
+          userEmail: user ? user.email : null,
+          createdAt: serverTimestamp()
+        });
+
+        // 성공 시: 저장된 문서 id도 넘겨주기
+        localStorage.setItem("donation_doc_id", docRef.id);
+
+        // 1초 정도 로딩 후 성공 페이지로
+        setTimeout(() => {
+          window.location.href = "payment_success.html";
+        }, 900);
+
+      } catch (err) {
+        console.error(err);
+        alert("기부 기록 저장 실패: " + err.message);
+        window.location.href = "payment.html";
+      }
+    });
   </script>
 </body>
 </html>
