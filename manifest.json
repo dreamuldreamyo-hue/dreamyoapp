@@ -1,0 +1,21 @@
+{
+  "name": "Dreamyo",
+  "short_name": "Dreamyo",
+  "start_url": "/dreamyoapp/home.html",
+  "scope": "/dreamyoapp/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4E62E3",
+  "icons": [
+    {
+      "src": "/dreamyoapp/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/dreamyoapp/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
