@@ -1017,4 +1017,8 @@ body {
   object-fit: cover;     /* 🔥 박스에 딱 맞게 채우기 */
   display: block;
 }
+/* 햄버거 사진만 초점 조정 */
+.menu-thumb img.hambuger {
+  object-position: center center; /* 기본 중앙 */
+}
 
