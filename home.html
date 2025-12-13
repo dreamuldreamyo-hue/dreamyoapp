@@ -4,17 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Dreamyo - 홈</title>
+
   <link rel="stylesheet" href="style.css" />
-  <link rel="manifest" href="/dreamyoapp/manifest.json">
 
-<meta name="theme-color" content="#4E62E3">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Dreamyo">
-<link rel="apple-touch-icon" href="/dreamyoapp/logo.png">
+  <!-- ✅ PWA (home.html이 dreamyoapp 폴더 안에 있으니까 상대경로가 안정적) -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#4E62E3" />
 
+  <!-- ✅ iOS 홈화면 추가용 -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Dreamyo" />
+  <link rel="apple-touch-icon" href="./logo.png" />
 </head>
-<script src="/dreamyoapp/pwa.js"></script>
 
 <body>
   <div class="screen screen-home">
@@ -42,32 +44,29 @@
         </div>
 
         <div class="horizontal-scroll">
-         <article class="menu-card">
-  <div class="menu-thumb">
-    <img src="tteokbokki.png" alt="동네떡볶이(계란)" class="menu-img" />
-  </div>
-  <div class="menu-name">동네떡볶이(계란)</div>
-  <div class="menu-price">5,900원</div>
-</article>
+          <article class="menu-card">
+            <div class="menu-thumb">
+              <img src="tteokbokki.png" alt="동네떡볶이(계란)" class="menu-img" />
+            </div>
+            <div class="menu-name">동네떡볶이(계란)</div>
+            <div class="menu-price">5,900원</div>
+          </article>
 
-<article class="menu-card">
-  <div class="menu-thumb">
-    <img src="coffee.png" alt="이디야 카페모카 R" class="menu-img" />
-  </div>
-  <div class="menu-name">이디야 카페모카 R</div>
-  <div class="menu-price">3,500원</div>
-</article>
+          <article class="menu-card">
+            <div class="menu-thumb">
+              <img src="coffee.png" alt="이디야 카페모카 R" class="menu-img" />
+            </div>
+            <div class="menu-name">이디야 카페모카 R</div>
+            <div class="menu-price">3,500원</div>
+          </article>
 
-<article class="menu-card">
-  <div class="menu-thumb">
-    <img src="hambuger.png" alt="햄버거 세트" class="menu-img menu-img-hambuger" />
-  </div>
-  <div class="menu-name">햄버거 세트</div>
-  <div class="menu-price">6,700원</div>
-</article>
-
-
-
+          <article class="menu-card">
+            <div class="menu-thumb">
+              <img src="hambuger.png" alt="햄버거 세트" class="menu-img menu-img-hambuger" />
+            </div>
+            <div class="menu-name">햄버거 세트</div>
+            <div class="menu-price">6,700원</div>
+          </article>
 
           <article class="menu-card">
             <div class="menu-thumb">사진</div>
@@ -175,30 +174,26 @@
 
     </main>
 
-    <!-- 하단 탭바(중복 X, 이거 하나만) -->
+    <!-- 하단 탭바 -->
     <nav class="tabbar">
       <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
       <a href="#" class="tab-item" aria-label="기록">◴</a>
-
-      <!-- 가운데 하트(파란 원 버튼) -->
       <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
-
       <a href="#" class="tab-item" aria-label="뉴스">📖</a>
       <a href="#" class="tab-item" aria-label="마이">👤</a>
-
       <div class="home-indicator" aria-hidden="true"></div>
     </nav>
 
   </div>
 
+  <!-- ✅ 스크립트는 body 맨 아래 -->
+  <script src="./pwa.js"></script>
+
   <script>
     document.getElementById("go-qr").addEventListener("click", () => {
-      // QR 화면에 넘길 값 저장
       const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
-
       localStorage.setItem("qr_store", "파스쿠찌");
       localStorage.setItem("pay_amount", String(amount));
-
       window.location.href = "qr_payment.html";
     });
   </script>
