@@ -3,20 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
   <title>Dreamyo - 홈</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <div class="screen screen-home">
 
     <!-- 상단: 로고 + 지금까지 사준 금액 -->
     <header class="home-header">
       <div class="home-logo-row">
-       <img src="logo.png" alt="Dreamyo" class="logo-img home" />
-
-        <!-- 오른쪽 아이콘 자리 (알림, 설정 등 필요하면 나중에) -->
-        <!-- <button class="icon-button">🔔</button> -->
+        <img src="logo.png" alt="Dreamyo" class="logo-img home" />
       </div>
 
       <p class="home-balance-label">지금까지 사준 금액</p>
@@ -28,7 +25,7 @@
 
     <main class="home-main">
 
-      <!-- 섹션 1: 최근 사주세요 (가로 스크롤 카드) -->
+      <!-- 섹션 1: 최근 사주세요 -->
       <section class="home-section">
         <div class="section-header">
           <h2 class="section-title">최근 사주세요</h2>
@@ -62,22 +59,21 @@
         </div>
       </section>
 
-      <!-- 섹션 2: 사줄게요 (지도 박스) -->
+      <!-- 섹션 2: 사줄게요 (지도) -->
       <section class="home-section">
         <div class="section-header">
           <h2 class="section-title">사줄게요</h2>
           <button class="section-arrow">›</button>
         </div>
 
-      <div class="map-card">
-  <div class="map-thumb">
-    <img src="map.png" alt="지도" class="map-img" />
-  </div>
-</div>
+        <div class="map-card">
+          <div class="map-thumb">
+            <img src="map.png" alt="지도" class="map-img" />
+          </div>
+        </div>
+      </section>
 
-
-
-      <!-- 섹션 3: 따뜻한 뉴스 (가로 스크롤 카드) -->
+      <!-- 섹션 3: 따뜻한 뉴스 -->
       <section class="home-section">
         <div class="section-header">
           <h2 class="section-title">따뜻한 뉴스</h2>
@@ -88,30 +84,24 @@
           <article class="news-card">
             <div class="news-thumb">사진</div>
             <div class="news-meta">2025.11.26</div>
-            <div class="news-title">
-              결제하면서 직접 기부한 CU, 착한 100일 기...
-            </div>
+            <div class="news-title">결제하면서 직접 기부한 CU, 착한 100일 기...</div>
           </article>
 
           <article class="news-card">
             <div class="news-thumb">사진</div>
             <div class="news-meta">2025.11.25</div>
-            <div class="news-title">
-              온성의료재단, 초록우산 어린이재단에 1,000만...
-            </div>
+            <div class="news-title">온성의료재단, 초록우산 어린이재단에 1,000만...</div>
           </article>
 
           <article class="news-card">
             <div class="news-thumb">사진</div>
             <div class="news-meta">2025.11.20</div>
-            <div class="news-title">
-              LG화학 임직원, 결식아동 도시락 2만개 후원...
-            </div>
+            <div class="news-title">LG화학 임직원, 결식아동 도시락 2만개 후원...</div>
           </article>
         </div>
       </section>
 
-      <!-- 섹션 4: 우리들의 커뮤니티 (세로 리스트) -->
+      <!-- 섹션 4: 우리들의 커뮤니티 -->
       <section class="home-section">
         <div class="section-header">
           <h2 class="section-title">우리들의 커뮤니티</h2>
@@ -121,105 +111,78 @@
         <div class="community-list">
           <article class="community-item">
             <div class="community-tag">드림 셰프</div>
-            <div class="community-text">
-              지도 중학교 때 급식카드로 밥 먹었어요. 정...
-            </div>
+            <div class="community-text">지도 중학교 때 급식카드로 밥 먹었어요. 정...</div>
           </article>
 
           <article class="community-item">
             <div class="community-tag">드림 셰프</div>
-            <div class="community-text">
-              꼭 어릴 때 저를 응원하는 기분입니다. 아이...
-            </div>
+            <div class="community-text">꼭 어릴 때 저를 응원하는 기분입니다. 아이...</div>
           </article>
 
           <article class="community-item">
             <div class="community-tag">드림을 드림요</div>
-            <div class="community-text">
-              오늘 친구들과 카페에 갔다 왔어요. 후원자...
-            </div>
+            <div class="community-text">오늘 친구들과 카페에 갔다 왔어요. 후원자...</div>
           </article>
         </div>
       </section>
 
-    <!-- 섹션 5: 추천 챗봇 (한 줄) -->
-<section class="home-section">
-  <button class="row-link" onclick="location.href='recommend.html'">
-    <div class="row-link-main">
-      <div class="row-link-title">추천 챗봇</div>
-      <div class="row-link-sub">드림이가 내가 가진 마일리지로 기부할 품목을 추천해줘요!</div>
-    </div>
-    <div class="row-link-arrow">›</div>
-  </button>
-</section>
-
-
+      <!-- 섹션 5: 추천 챗봇 -->
+      <section class="home-section">
+        <button class="row-link" onclick="location.href='recommend.html'">
+          <div class="row-link-main">
+            <div class="row-link-title">추천 챗봇</div>
+            <div class="row-link-sub">드림이가 내가 가진 마일리지로 기부할 품목을 추천해줘요!</div>
+          </div>
+          <div class="row-link-arrow">›</div>
+        </button>
+      </section>
 
       <!-- 섹션 6: 챗봇에게 질문하기 -->
-<section class="home-section">
-  <button class="row-link" onclick="location.href='recommend.html'">
-    <div class="row-link-main">
-      <div class="row-link-title">챗봇에게 질문하기</div>
-      <div class="row-link-sub">드림요에 대해 궁금한 걸 물어보세요</div>
-    </div>
-    <div class="row-link-arrow">›</div>
-  </button>
-</section>
+      <section class="home-section">
+        <button class="row-link" onclick="location.href='recommend.html'">
+          <div class="row-link-main">
+            <div class="row-link-title">챗봇에게 질문하기</div>
+            <div class="row-link-sub">드림요에 대해 궁금한 걸 물어보세요</div>
+          </div>
+          <div class="row-link-arrow">›</div>
+        </button>
+      </section>
 
-
-      <!-- 푸터 정보 -->
+      <!-- 푸터 -->
       <footer class="home-footer">
         <p>dreamuldreamyo@gmail.com | (대전광역시 유성구 대덕대로 000)</p>
         <p>고객센터 042-621-5113</p>
-        <p class="footer-links">
-          이용약관 · 개인정보처리방침 · 자주 묻는 질문
-        </p>
+        <p class="footer-links">이용약관 · 개인정보처리방침 · 자주 묻는 질문</p>
       </footer>
+
     </main>
 
-  <!-- 하단 탭바 -->
-<nav class="tabbar">
-  <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
-  <a href="#" class="tab-item" aria-label="기록">◴</a>
+    <!-- 하단 탭바(중복 X, 이거 하나만) -->
+    <nav class="tabbar">
+      <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
+      <a href="#" class="tab-item" aria-label="기록">◴</a>
 
-  <!-- ✅ 가운데 하트(파란원) -->
-  <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
+      <!-- 가운데 하트(파란 원 버튼) -->
+      <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
 
-  <a href="#" class="tab-item" aria-label="뉴스">📖</a>
-  <a href="#" class="tab-item" aria-label="마이">👤</a>
+      <a href="#" class="tab-item" aria-label="뉴스">📖</a>
+      <a href="#" class="tab-item" aria-label="마이">👤</a>
 
-  <div class="home-indicator"></div>
-</nav>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </nav>
 
+  </div>
 
-  <!-- 가운데 떠있는 버튼 -->
-  <button
-  class="tab-center"
-  type="button"
-  aria-label="QR결제"
-  onclick="location.href='qr_payment.html'"
->
-  ♥
-</button>
+  <script>
+    document.getElementById("go-qr").addEventListener("click", () => {
+      // QR 화면에 넘길 값 저장
+      const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
 
+      localStorage.setItem("qr_store", "파스쿠찌");
+      localStorage.setItem("pay_amount", String(amount));
 
-  <a class="tab-item" href="#" aria-label="뉴스">📖</a>
-  <a class="tab-item" href="#" aria-label="마이">👤</a>
-
-  <!-- 아이폰 하단 바(검은 줄) -->
-  <div class="home-indicator" aria-hidden="true"></div>
-</nav>
-<script>
-  document.getElementById("go-qr").addEventListener("click", () => {
-    // ✅ 여기서 QR 화면에 넘길 값 저장
-    // 결제 완료 후 넘어가는 흐름이면 pay_amount를 이미 갖고 있을 수 있음
-    const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
-
-    // 매장명도 저장(원하면 다른 화면에서 바꿔 넣어도 됨)
-    localStorage.setItem("qr_store", "파스쿠찌");
-    localStorage.setItem("pay_amount", String(amount));
-
-    // QR 페이지로 이동
-    window.location.href = "qr_payment.html";
-  });
-</script>
+      window.location.href = "qr_payment.html";
+    });
+  </script>
+</body>
+</html>
