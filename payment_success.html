@@ -3,14 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
   <title>결제 완료</title>
   <link rel="stylesheet" href="style.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
-  <script src="./pwa.js"></script>
-</body>
-</html>
+
 <body>
   <div class="screen" style="padding-top: 80px;">
     <div class="center">
@@ -24,12 +20,21 @@
   </div>
 
   <script>
-    const item = localStorage.getItem("pay_item") || "(품목 없음)";
-    const amount = localStorage.getItem("pay_amount") || "0";
-    const method = localStorage.getItem("pay_method") || "(수단 없음)";
+    // ✅ 최신 흐름(추천→결제)에서 저장한 값 사용
+    const item  = localStorage.getItem("donationItem") || "(품목 없음)";
+    const amount = localStorage.getItem("donationAmount") || "0";
+    const store = localStorage.getItem("donationStoreName") || "(매장 없음)";
 
     document.getElementById("summary").textContent =
-      `${item} / ${Number(amount).toLocaleString()}원 / ${method}`;
+      `${item} / ${Number(amount).toLocaleString()}P / ${store}`;
+
+    // ✅ 예전 더벤티 값이 남아서 다시 뜨는 것 방지(구 키 삭제)
+    localStorage.removeItem("pay_item");
+    localStorage.removeItem("pay_amount");
+    localStorage.removeItem("pay_method");
   </script>
+
+  <script src="./pwa.js"></script>
 </body>
 </html>
+
