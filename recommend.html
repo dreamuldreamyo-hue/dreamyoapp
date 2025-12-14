@@ -23,8 +23,7 @@
           안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
           <b>추천해드리밍</b> 입니다.<br /><br />
           보유 포인트(마일리지)를 입력하면,<br />
-          <b>현재 위치 5km 내</b>에서 기부 가능한 품목을<br />
-          추천해드릴게요!<br />
+          <b>현재 위치 1km 이내</b>에서 기부 가능한 품목을 추천해드릴게요!<br />
           예: 5000
         </div>
       </div>
@@ -45,7 +44,7 @@
 
   <script src="./pwa.js"></script>
 
-  <!-- ✅ Firebase 모듈 CDN + Firestore + (익명로그인 옵션) -->
+  <!-- ✅ Firebase 모듈 + Firestore + (Gemini Developer API는 fetch로 호출) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
@@ -54,11 +53,17 @@
       getDocs,
       query,
       limit,
-      collectionGroup
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-    // ✅ 너 Firebase 설정
+    /***********************
+     * ✅ 0) 설정값
+     ***********************/
+    // 🔥 여기에 Gemini Developer API 키 넣어줘 (데모용 프론트 직접 호출)
+    // 키 발급: Google AI Studio(aistudio.google.com) → Get API key
+    const GEMINI_API_KEY = "여기에_너의_GEMINI_API_KEY_붙여넣기";
+
+    // ✅ 너가 준 Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBo1Ezg6tzCDDCGpBNWmJfCLe8hUsmLYi4",
       authDomain: "dreamyo-e42bb.firebaseapp.com",
@@ -69,31 +74,36 @@
       measurementId: "G-F6MPL89R9D"
     };
 
-    // ✅ (데모용) Gemini Developer API 키: 여기에 붙여넣기
-    const GEMINI_API_KEY = "AIzaSyBpAyMWV2_TzH8XTPsOVLuWFBjgSqXKSYA";
-
-    // ✅ 위치 허용 안 되면 fallback (대전 컨벤션센터 근처)
+    // 위치권한 거부 시 fallback(대전컨벤션센터 근처 예시)
     const FALLBACK_LOCATION = { lat: 36.3745, lng: 127.3870 };
+    const RADIUS_KM = 1.0;
 
+    /***********************
+     * ✅ 1) Firebase 초기화
+     ***********************/
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // (선택) 익명 로그인: Firestore rules가 auth 필요할 때 대비
+    // (권장) 익명로그인: rules가 auth 필요일 때 대비
     const auth = getAuth(app);
-    try { await signInAnonymously(auth); } catch (e) {}
+    try { await signInAnonymously(auth); } catch (e) { /* 익명 로그인 막혀도 계속 */ }
 
-    // ---------- DOM ----------
+    /***********************
+     * ✅ 2) DOM/상태
+     ***********************/
     const chatBody = document.getElementById("chat-body");
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
-    // ---------- 상태 ----------
+    let menus = [];
+    let storesMap = new Map(); // key: doc.id, value: store data
     let actionsShown = false;
     let selectedItem = null;
-    let menus = []; // Firestore에서 가져온 메뉴 목록
 
-    // ---------- UI helpers ----------
-    function addBubble(text, type) {
+    /***********************
+     * ✅ 3) UI 헬퍼
+     ***********************/
+    function addBubble(text, type = "bot") {
       const row = document.createElement("div");
       row.className = "chat-row " + type;
 
@@ -126,183 +136,189 @@
       selectedItem = null;
     }
 
-    // ---------- 타입 변환 ----------
+    /***********************
+     * ✅ 4) Firestore 로드: menus + stores
+     ***********************/
     function toBool(v) {
       if (v === true) return true;
       if (v === false) return false;
       if (typeof v === "string") return v.toLowerCase() === "true";
       return false;
     }
+
     function toNum(v) {
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
     }
 
-    // ---------- 거리 계산 (km) ----------
-    function distanceKm(lat1, lon1, lat2, lon2) {
-      const R = 6371;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLon = (lon2 - lon1) * Math.PI / 180;
-      const a =
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-      return R * c;
+    async function loadMenus() {
+      const snap = await getDocs(query(collection(db, "menus"), limit(300)));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
     }
 
-    // ---------- 현재 위치 가져오기 ----------
-    async function getUserLocation() {
-      if (!navigator.geolocation) {
-        return { ...FALLBACK_LOCATION, source: "fallback(no-geolocation)" };
-      }
+    async function loadStores() {
+      const snap = await getDocs(query(collection(db, "stores"), limit(300)));
+      const m = new Map();
+      snap.docs.forEach(d => m.set(d.id, { id: d.id, ...d.data() }));
+      return m;
+    }
 
+    /***********************
+     * ✅ 5) 위치 가져오기
+     ***********************/
+    function getCurrentLocation() {
       return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+          resolve({ ...FALLBACK_LOCATION, source: "fallback(no-geolocation)" });
+          return;
+        }
+
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             resolve({
               lat: pos.coords.latitude,
               lng: pos.coords.longitude,
-              source: "gps"
+              source: "device"
             });
           },
           () => {
             resolve({ ...FALLBACK_LOCATION, source: "fallback(denied)" });
           },
-          { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
       });
     }
 
-    // ---------- Firestore에서 메뉴 불러오기 (네 구조 최대한 자동 대응) ----------
-    async function loadMenusFlexible() {
-      // 1) 최상위 menus
-      try {
-        const s1 = await getDocs(query(collection(db, "menus"), limit(300)));
-        if (!s1.empty) return s1.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch (e) {}
-
-      // 2) 어떤 경로든 "menus" 서브컬렉션 전부 (new_products/menus 포함 가능)
-      try {
-        const s2 = await getDocs(query(collectionGroup(db, "menus"), limit(300)));
-        if (!s2.empty) return s2.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch (e) {}
-
-      // 3) 구버전 products
-      try {
-        const s3 = await getDocs(query(collection(db, "products"), limit(300)));
-        if (!s3.empty) return s3.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch (e) {}
-
-      return [];
+    /***********************
+     * ✅ 6) 거리 계산 (km)
+     ***********************/
+    function haversineKm(lat1, lng1, lat2, lng2) {
+      const R = 6371;
+      const toRad = (x) => (x * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(a));
     }
 
-    // ---------- 추천 후보 만들기: (1km) + (가격<=포인트) + available=true ----------
-    function getRecommendedMenus(point, userLat, userLng) {
+    /***********************
+     * ✅ 7) 추천 로직 (JS가 “필터/정렬” 담당)
+     * - 1) available true
+     * - 2) price <= point
+     * - 3) storeId로 stores 찾아서 1km 이내
+     ***********************/
+    function getRecommended(point, userLoc) {
       const candidates = menus
-        .map(m => {
-          const price = toNum(m.price ?? m.priceMileage ?? m.amount);
-          const available = toBool(m.available);
-          const lat = toNum(m.lat);
-          const lng = toNum(m.lng);
-          const pop = toNum(m.popularityScore) ?? 0;
+        .map(menu => {
+          const price = toNum(menu.price ?? menu.priceMileage);
+          const available = toBool(menu.available);
+          const storeId = menu.storeId; // 예: "store"
+          const store = storeId ? storesMap.get(storeId) : null;
 
-          // lat/lng 없으면 제외 (위치 기반 조건)
-          if (lat === null || lng === null) return null;
+          // store lat/lng
+          const sLat = store ? toNum(store.lat) : null;
+          const sLng = store ? toNum(store.lng) : null;
 
-          const dist = distanceKm(userLat, userLng, lat, lng);
+          let distanceKm = null;
+          if (sLat !== null && sLng !== null) {
+            distanceKm = haversineKm(userLoc.lat, userLoc.lng, sLat, sLng);
+          }
 
           return {
-            ...m,
+            ...menu,
+            id: menu.id,
             price,
             available,
-            lat,
-            lng,
-            distanceKm: dist,
-            popularityScoreNum: pop
+            storeId,
+            storeName: menu.storeName ?? (store?.name ?? ""),
+            storeAddress: store?.address ?? "",
+            storeLat: sLat,
+            storeLng: sLng,
+            distanceKm
           };
         })
-        .filter(Boolean)
-        .filter(m => m.available === true)
-        .filter(m => m.distanceKm <= 1.0)
-        .filter(m => m.price !== null && m.price <= point)
-        // 정렬: 가까운 순 -> 가격 낮은 순 -> 인기 높은 순
+        .filter(x => x.available === true)
+        .filter(x => x.price !== null && x.price <= point)
+        .filter(x => x.distanceKm !== null && x.distanceKm <= RADIUS_KM)
         .sort((a, b) => {
+          // 가까운 순 -> 가격 낮은 순
           if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
-          if (a.price !== b.price) return a.price - b.price;
-          return (b.popularityScoreNum ?? 0) - (a.popularityScoreNum ?? 0);
+          return a.price - b.price;
         });
 
       return candidates.slice(0, 3);
     }
 
-    // ---------- Gemini 호출: "설명만" 생성 ----------
-    async function geminiExplain(point, items, locationSource) {
-      // 키 없으면 바로 실패 처리 → fallback 문구로
-      if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("여기에_너의")) {
-        throw new Error("GEMINI_API_KEY not set");
+    /***********************
+     * ✅ 8) Gemini Developer API: “설명/후속질문”만 생성
+     ***********************/
+    async function geminiExplain(point, items) {
+      if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("여기에_")) {
+        // 키 없으면 그냥 기본 멘트로 처리
+        return null;
       }
 
       const prompt = `
 너는 한국어로 답하는 따뜻한 챗봇 "추천해드리밍"이야.
 
 엄격한 규칙:
-- 계산/필터링/추가 추천은 절대 하지 마. 아래 items(이미 추천된 목록)만 설명해.
-- 첫 문장에 사용자의 보유 포인트(${point})를 반드시 언급해.
-- 각 item마다 추천 이유를 1~2문장으로 짧게 써.
-- 마지막에 선호를 묻는 질문 1개만 해.
-- 출력은 JSON만. 다른 텍스트/코드블록 금지.
+- 계산/판단/추가추천 금지. 아래 items(이미 추천된 목록)만 설명한다.
+- 첫 문장에 사용자의 보유 포인트(${point})를 반드시 언급한다.
+- 각 항목마다 1~2문장 추천 이유를 쓴다.
+- 마지막에 선호를 묻는 질문 1개만 한다.
+- 출력은 반드시 JSON만. (다른 텍스트/코드블록 금지)
 
-출력 JSON 형식:
+출력 형식:
 {
-  "intro": "string",
-  "reasons": [{"id":"string","reason":"string"}],
-  "followUp": "string"
+ "intro": string,
+ "reasons":[{"id":string,"reason":string}],
+ "followUp": string
 }
-
-참고: locationSource="${locationSource}" (gps면 '현재 위치 기반', fallback이면 '대전컨벤션센터 기준'처럼 자연스럽게만 언급 가능)
 
 items:
 ${JSON.stringify(items.map(it => ({
   id: it.id,
   name: it.name,
-  storeName: it.storeName ?? "",
   price: it.price,
-  distanceKm: Number(it.distanceKm?.toFixed(2))
+  storeName: it.storeName,
+  distanceKm: Math.round((it.distanceKm ?? 0) * 100) / 100
 })), null, 2)}
-      `.trim();
+`.trim();
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 350 }
+          generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
         })
       });
 
       if (!res.ok) {
         const t = await res.text();
-        throw new Error("Gemini API error: " + t);
+        console.error("Gemini API error:", t);
+        return null;
       }
 
       const data = await res.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      const cleaned = text.replace(/```json|```/g, "").trim();
 
-      // 혹시 모델이 말 섞으면 JSON만 뽑아내기
-      const cleaned = String(text).replace(/```json|```/g, "").trim();
       try {
         return JSON.parse(cleaned);
-      } catch {
-        const m = cleaned.match(/\{[\s\S]*\}/);
-        if (!m) throw new Error("Gemini returned non-JSON");
-        return JSON.parse(m[0]);
+      } catch (e) {
+        console.error("Gemini JSON parse fail:", cleaned);
+        return null;
       }
     }
 
-    // ---------- 옵션 버튼 ----------
+    /***********************
+     * ✅ 9) 옵션/액션 UI
+     ***********************/
     function showOptions(items) {
       document.querySelector(".chat-options")?.remove();
       if (!items.length) return;
@@ -317,15 +333,14 @@ ${JSON.stringify(items.map(it => ({
 
         const title = document.createElement("div");
         title.className = "chat-option-title";
-        title.textContent = `${item.name}`;
+        title.textContent = `${item.name} (${item.storeName || "매장"})`;
 
-        const sub = document.createElement("div");
-        sub.className = "chat-option-price";
-        const dist = Number(item.distanceKm ?? 0).toFixed(2);
-        sub.textContent = `${item.price.toLocaleString()}P · ${dist}km`;
+        const price = document.createElement("div");
+        price.className = "chat-option-price";
+        price.textContent = `${item.price.toLocaleString()}P · ${Math.round(item.distanceKm * 1000)}m`;
 
         btn.appendChild(title);
-        btn.appendChild(sub);
+        btn.appendChild(price);
 
         btn.onclick = () => {
           document.querySelectorAll(".chat-option-button").forEach(el => el.classList.remove("selected"));
@@ -340,7 +355,6 @@ ${JSON.stringify(items.map(it => ({
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // ---------- 액션 버튼 ----------
     function showActions() {
       if (actionsShown) return;
       actionsShown = true;
@@ -357,9 +371,11 @@ ${JSON.stringify(items.map(it => ({
           return;
         }
 
-        localStorage.setItem("donationItem", `${selectedItem.name}`);
+        localStorage.setItem("donationItem", selectedItem.name || "");
         localStorage.setItem("donationAmount", String(selectedItem.price || 0));
         localStorage.setItem("donationItemId", selectedItem.id || "");
+        localStorage.setItem("donationStoreName", selectedItem.storeName || "");
+        localStorage.setItem("donationStoreId", selectedItem.storeId || "");
 
         window.location.href = "payment.html";
       };
@@ -375,19 +391,25 @@ ${JSON.stringify(items.map(it => ({
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // ---------- 초기 로딩 ----------
-    addBubble("메뉴 데이터를 불러오는 중이에요…", "bot");
-    menus = await loadMenusFlexible();
+    /***********************
+     * ✅ 10) 초기 로딩
+     ***********************/
+    addBubble("메뉴/매장 데이터를 불러오는 중이에요…", "bot");
 
-    if (!menus.length) {
-      addBubble("Firestore에서 menus 데이터를 못 찾았어 😢  (collectionGroup('menus') / products 확인해줘!)", "bot");
-      addBubble("✅ 그리고 위치 기반을 쓰려면 각 메뉴 문서에 lat/lng(숫자) 필드가 있어야 해!", "bot");
-    } else {
-      addBubble(`메뉴 ${menus.length}개 로딩 완료! 이제 포인트를 입력해줘 😊`, "bot");
-      addBubble("📍 포인트 입력하면 위치 권한을 요청하고, 1km 내 매장만 추천할게요!", "bot");
+    try {
+      menus = await loadMenus();
+      storesMap = await loadStores();
+
+      addBubble(`메뉴 ${menus.length}개 · 매장 ${storesMap.size}개 로딩 완료! 포인트를 입력해줘 😊`, "bot");
+      addBubble(`📍 포인트 입력 시 위치 권한을 요청하고, 1km 이내 매장만 추천할게요!`, "bot");
+    } catch (e) {
+      console.error(e);
+      addBubble("Firestore 데이터를 불러오지 못했어 😢 (Rules/컬렉션 이름/권한 확인)", "bot");
     }
 
-    // ---------- 입력 처리 ----------
+    /***********************
+     * ✅ 11) 입력 처리
+     ***********************/
     chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = chatInput.value.trim();
@@ -395,11 +417,7 @@ ${JSON.stringify(items.map(it => ({
 
       addBubble(text, "user");
       chatInput.value = "";
-
-      if (!menus.length) {
-        addBubble("아직 메뉴 데이터가 없어서 추천을 못해요. Firestore 데이터를 먼저 확인해줘!", "bot");
-        return;
-      }
+      clearOptionsAndActions();
 
       const num = text.match(/\d+/g);
       if (!num) {
@@ -407,59 +425,52 @@ ${JSON.stringify(items.map(it => ({
         return;
       }
 
-      const point = parseInt(num[0], 10);
-      clearOptionsAndActions();
-
-      // 1) 위치 받기
-      addBubble("📍 위치 확인 중… (권한 허용하면 더 정확해져요!)", "bot");
-      const loc = await getUserLocation();
-      const usingFallback = loc.source.startsWith("fallback");
-
-      if (usingFallback) {
-        addBubble("위치 권한이 없어서 대전컨벤션센터 기준으로 계산할게요!", "bot");
-      } else {
-        addBubble("현재 위치 기준으로 1km 내에서 추천할게요!", "bot");
-      }
-
-      // 2) 위치 + 포인트 기반 추천
-      const items = getRecommendedMenus(point, loc.lat, loc.lng);
-
-      if (!items.length) {
-        addCardBubble(
-          `현재 <b>${point.toLocaleString()}P</b>로는<br>` +
-          `<b>1km 내</b>에서 기부 가능한 품목이 없어요 😢<br>` +
-          `포인트를 더 모으거나, 위치 권한을 허용하고 다시 시도해볼까요?`
-        );
+      if (!menus.length || !storesMap.size) {
+        addBubble("아직 데이터가 없어서 추천을 못해요. menus/stores 데이터를 확인해줘!", "bot");
         return;
       }
 
-      // 3) Gemini로 “이유/후속 질문” 생성
-      addBubble("🤖 제미나이가 추천 이유를 만들고 있어요…", "bot");
+      const point = parseInt(num[0], 10);
 
-      let aiText;
-      try {
-        aiText = await geminiExplain(point, items, loc.source);
-      } catch (err) {
-        console.error(err);
-        aiText = {
-          intro: `${point.toLocaleString()}P로 가능한 추천이에요!`,
-          reasons: items.map(it => ({ id: it.id, reason: "현재 위치 근처에서 포인트 조건에 맞는 메뉴라 추천해요!" })),
-          followUp: "커피/디저트/편의점 중 어떤 쪽이 더 끌려요?"
-        };
-        addBubble("⚠️ 제미나이 호출이 실패해서 기본 문구로 보여줄게요 (API 키/쿼터 확인 필요)", "bot");
+      addBubble("📍 위치 확인 중… (권한을 허용하면 더 정확해져요!)", "bot");
+      const userLoc = await getCurrentLocation();
+
+      if (userLoc.source.startsWith("fallback")) {
+        addBubble("위치 권한이 없어서 대전컨벤션센터 기준으로 계산할게요!", "bot");
+      } else {
+        addBubble("현재 위치 기준으로 1km 이내에서 추천할게요!", "bot");
       }
 
-      const reasonMap = new Map((aiText.reasons || []).map(r => [r.id, r.reason]));
+      const items = getRecommended(point, userLoc);
+
+      if (!items.length) {
+        addCardBubble(`
+          현재 <b>${point.toLocaleString()}P</b>로는<br/>
+          <b>1km 이내</b>에서 기부 가능한 품목이 없어요 😢<br/><br/>
+          - 위치 권한을 허용하거나<br/>
+          - 포인트를 더 올려서 다시 시도해볼까요?
+        `);
+        return;
+      }
+
+      addBubble("AI가 추천 이유를 만들고 있어요… 🤖", "bot");
+
+      const ai = await geminiExplain(point, items);
+
+      const intro = ai?.intro || `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`;
+      const reasonsMap = new Map((ai?.reasons || []).map(r => [r.id, r.reason]));
+      const followUp = ai?.followUp || "커피/디저트 중 어떤 쪽이 더 좋아?";
 
       const listHtml = items.map((it, idx) => {
-        const reason = reasonMap.get(it.id) || "포인트 조건과 거리 조건에 맞는 메뉴라 추천해요!";
-        const dist = Number(it.distanceKm ?? 0).toFixed(2);
-        const store = it.storeName ? ` · ${it.storeName}` : "";
-        return `${idx + 1}. <b>${it.name}</b> (${it.price.toLocaleString()}P · ${dist}km${store})<br><span style="opacity:.9">${reason}</span>`;
+        const reason = reasonsMap.get(it.id) || "지금 포인트로 가능하고, 가까운 매장이라 추천해요!";
+        return `
+          ${idx + 1}. <b>${it.name}</b> (${it.price.toLocaleString()}P)<br/>
+          <span style="opacity:.9">
+            ${it.storeName ? `${it.storeName} · ` : ""}${Math.round(it.distanceKm * 1000)}m<br/>
+            ${reason}
+          </span>
+        `;
       }).join("<br><br>");
-
-      const intro = aiText.intro || `${point.toLocaleString()}P로 가능한 추천이에요!`;
-      const followUp = aiText.followUp || "어떤 메뉴가 더 끌려요?";
 
       addCardBubble(`
         <b>${intro}</b><br><br>
@@ -470,7 +481,6 @@ ${JSON.stringify(items.map(it => ({
       showOptions(items);
       showActions();
     });
-
   </script>
 </body>
 </html>
