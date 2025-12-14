@@ -1038,3 +1038,56 @@ body {
   object-fit: cover;
   display: block;
 }
+/* =========================
+   iOS 안전영역(Safe Area) 대응
+   ========================= */
+
+/* 전체 화면 컨테이너가 노치 영역을 침범하지 않도록 */
+.screen.chat-screen {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 상단 헤더: 상태바 높이만큼 여백을 추가 */
+.chat-header {
+  position: sticky; /* fixed보다 sticky가 안전함 */
+  top: 0;
+  z-index: 50;
+
+  /* ✅ 핵심: 상단 safe-area 만큼 패딩 추가 */
+  padding-top: calc(env(safe-area-inset-top) + 10px);
+  padding-bottom: 10px;
+
+  /* 좌우는 기존 디자인 유지 */
+  padding-left: 16px;
+  padding-right: 16px;
+
+  background: #fff; /* 헤더가 채팅 위에 올라오니 배경 필요 */
+}
+
+/* 제목/뒤로가기 수직 정렬 안정화 */
+.chat-title {
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* 뒤로가기 버튼이 헤더 높이에 맞게 중앙 정렬되도록 */
+.chat-header .back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+}
+
+/* 헤더가 sticky이므로 본문이 헤더 밑으로 숨지 않게 약간 여유 */
+.chat-body {
+  padding-top: 10px;
+}
+
+/* 하단 입력창도 iOS 홈바(safe-area bottom) 피해주기 */
+.chat-input-bar {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+  background: #fff;
+}
