@@ -5,63 +5,276 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>응원할게요</title>
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ===== Page Layout (iOS-like) ===== */
+    :root{
+      --bg:#F5F6F8;
+      --card:#FFFFFF;
+      --text:#111827;
+      --sub:#6B7280;
+      --line:#E5E7EB;
+      --blue:#3B5BFF;
+      --radius:18px;
+    }
+
+    body{ background: var(--bg); }
+
+    .support-wrap{
+      min-height: 100vh;
+      background: var(--bg);
+      padding-bottom: 260px; /* 바텀시트에 가리지 않게 */
+    }
+
+    /* 상단 헤더를 스샷처럼 */
+    .support-header{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding-top: env(safe-area-inset-top);
+      padding-left: 12px;
+      padding-right: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.02);
+    }
+    .support-header-row{
+      height: 44px;
+      display: grid;
+      grid-template-columns: 44px 1fr 44px;
+      align-items: center;
+    }
+    .support-back{
+      width: 44px;
+      height: 44px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 26px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .support-title{
+      text-align: center;
+      font-weight: 700;
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    /* 본문 패딩 */
+    .support-main{
+      padding: 14px 16px 0 16px;
+    }
+
+    /* 카드 */
+    .support-card{
+      background: var(--card);
+      border: 1px solid rgba(0,0,0,0.04);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+      box-shadow: 0 6px 18px rgba(17,24,39,0.06);
+    }
+
+    .amount-row{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .amount-meta{
+      color: var(--sub);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .amount-value{
+      color: var(--text);
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    /* 작은 응원하기 버튼(스샷처럼) */
+    .support-btn{
+      border: none;
+      background: var(--blue);
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 8px 16px rgba(59,91,255,0.25);
+    }
+    .support-btn:active{ transform: translateY(1px); }
+
+    .support-desc{
+      margin-top: 16px;
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.65;
+      letter-spacing: -0.01em;
+    }
+
+    .support-note{
+      margin-top: 14px;
+      color: #9CA3AF;
+      font-size: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    /* ===== Bottom Sheet (support list) ===== */
+    .sheet{
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+    }
+    .sheet-inner{
+      max-width: 520px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border-top-left-radius: 22px;
+      border-top-right-radius: 22px;
+      box-shadow: 0 -10px 30px rgba(17,24,39,0.14);
+      border: 1px solid rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    .sheet-grabber{
+      width: 44px;
+      height: 4px;
+      border-radius: 99px;
+      background: #D1D5DB;
+      margin: 10px auto 6px auto;
+    }
+    .sheet-list{
+      max-height: 210px; /* 스샷처럼 위에 좀 떠있게 */
+      overflow: auto;
+      padding: 8px 14px 14px 14px;
+    }
+
+    .support-row{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      padding: 10px 4px;
+    }
+    .support-avatar{
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      background: #111827;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color: white;
+      font-size: 18px;
+      flex: 0 0 auto;
+    }
+    .support-text{
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.45;
+      letter-spacing: -0.01em;
+    }
+    .support-text .name{ font-weight: 800; }
+    .support-text .amt{ font-weight: 800; }
+
+    /* 가운데 화면 폭 제한(웹에서 봐도 예쁘게) */
+    .center-max{
+      max-width: 520px;
+      margin: 0 auto;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="screen">
+  <div class="support-wrap">
 
-    <!-- 상단 -->
-    <header class="chat-header">
-      <a href="home.html" class="back">‹</a>
-      <h1 class="chat-title">응원할게요</h1>
+    <!-- Header -->
+    <header class="support-header">
+      <div class="support-header-row">
+        <a class="support-back" href="home.html" aria-label="뒤로">‹</a>
+        <div class="support-title">응원할게요</div>
+        <div></div>
+      </div>
     </header>
 
-    <main style="padding:16px;">
+    <!-- Main -->
+    <main class="support-main">
+      <div class="center-max">
 
-      <!-- 카드 -->
-     <div class="card" style="margin-top:24px;">
+        <section class="support-card">
+          <div class="amount-row">
+            <div>
+              <div class="amount-meta">모인금액</div>
+              <div class="amount-value">1,395,000원</div>
+            </div>
 
-        <!-- ✅ 금액 + 버튼: 세로 배치로 변경 -->
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          <div>
-            <div style="color:#6b7280; font-size:13px;">모인금액</div>
-            <div style="font-size:28px; font-weight:800; line-height:1.15;">1,395,000원</div>
+            <!-- ✅ 기능 유지: 버튼 누르면 결제(loading)로 이동 -->
+            <button class="support-btn" id="support-btn">응원하기</button>
           </div>
 
-          <button
-            class="btn-primary"
-            style="width:100%; height:44px; border-radius:12px; font-weight:700;"
-            id="support-btn"
-            type="button"
-          >
-            응원하기
-          </button>
-        </div>
+          <p class="support-desc">
+            저는 예고를 다니는 18살 학생입니다. 드럼을 전공하고 있는데, 부모님 형편상 계속 배우기 어려워 도움을 요청하게 되었습니다.
+            멋진 드러머가 되어 밴드에 들어가는 게 제 꿈입니다.
+          </p>
 
-        <p style="margin-top:16px; font-size:14px; line-height:1.6;">
-          저는 예고를 다니는 18살 학생입니다. 드럼을 전공하고 있는데,
-          부모님 형편상 계속 배우기 어려워 도움을 요청하게 되었습니다. 
-          대한민국에서 가장 유명한 드러머가 되고 싶어요. 
-        </p>
+          <div class="support-note">
+            관리자의 인증 절차를 거쳐 작성된 글입니다.
+          </div>
+        </section>
 
-        <p style="margin-top:8px; font-size:12px; color:#9ca3af;">
-          관리자의 인증 절차를 거쳐 작성된 글입니다.
-        </p>
       </div>
-
-      <!-- 응원 리스트 -->
-      <div style="margin-top:24px;">
-        <div class="support-item">익명의 눈사슴 님이 50,000원으로 응원했습니다.</div>
-        <div class="support-item">익명의 리트리버 님이 35,000원으로 응원했습니다.</div>
-        <div class="support-item">익명의 까마귀 님이 100,000원으로 응원했습니다.</div>
-      </div>
-
     </main>
+
+    <!-- Bottom Sheet -->
+    <section class="sheet" aria-label="응원 리스트">
+      <div class="sheet-inner center-max">
+        <div class="sheet-grabber"></div>
+
+        <div class="sheet-list">
+          <div class="support-row">
+            <div class="support-avatar">●</div>
+            <div class="support-text"><span class="name">익명의 눈사슴</span> 님이 <span class="amt">50,000원</span>으로 응원했습니다.</div>
+          </div>
+
+          <div class="support-row">
+            <div class="support-avatar">●</div>
+            <div class="support-text"><span class="name">익명의 리트리버</span> 님이 <span class="amt">35,000원</span>으로 응원했습니다.</div>
+          </div>
+
+          <div class="support-row">
+            <div class="support-avatar">●</div>
+            <div class="support-text"><span class="name">익명의 까마귀</span> 님이 <span class="amt">100,000원</span>으로 응원했습니다.</div>
+          </div>
+
+          <div class="support-row">
+            <div class="support-avatar">●</div>
+            <div class="support-text"><span class="name">익명의 분홍호랭</span> 님이 <span class="amt">10,000원</span>으로 응원했습니다.</div>
+          </div>
+
+          <div class="support-row">
+            <div class="support-avatar">●</div>
+            <div class="support-text"><span class="name">익명의 구르프</span> 님이 <span class="amt">5,000원</span>으로 응원했습니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <script>
     document.getElementById("support-btn").addEventListener("click", () => {
-      // ✅ 기존 결제 흐름과 맞추기
+      // ✅ 기존 결제 흐름과 동일하게(너가 쓰던 키)
       localStorage.setItem("donationItem", "청소년 예술 교육 응원");
       localStorage.setItem("donationAmount", "50000");
       localStorage.setItem("donationStoreName", "드림요 응원");
@@ -69,5 +282,8 @@
       window.location.href = "payment_loading.html";
     });
   </script>
+
+  <script src="./pwa.js"></script>
 </body>
 </html>
+
