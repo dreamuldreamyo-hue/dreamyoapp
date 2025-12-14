@@ -3,43 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
   <title>결제 진행중</title>
   <link rel="stylesheet" href="style.css" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
-  <script src="./pwa.js"></script>
-</body>
-</html>
-<body>
-  <div class="screen center" style="padding-top: 120px;">
-    <h2 style="margin:0; font-size:18px;">결제 진행중...</h2>
-    <p style="margin-top:8px; color:#6b7280; font-size:13px;">잠시만 기다려 주세요</p>
 
-    <p id="debug" style="margin-top:16px; font-size:12px; color:#9ca3af;"></p>
+<body>
+  <div class="screen loading-screen">
+    <div class="loading-card">
+      <h1 class="loading-title">결제 진행중…</h1>
+      <p class="loading-sub">잠시만 기다려 주세요</p>
+
+      <!-- ✅ 여기 문구가 선택한 품목/금액으로 바뀜 -->
+      <p class="loading-detail" id="loading-detail">
+        이동 준비중…
+      </p>
+    </div>
   </div>
 
   <script>
-    // ✅ 로딩 페이지에 들어오면 1.2초 뒤 성공 페이지로 이동
-    // (GitHub Pages에서 가장 안정적인 방식)
-    const item = localStorage.getItem("pay_item");
-    const amount = localStorage.getItem("pay_amount");
-    const method = localStorage.getItem("pay_method");
+    // ✅ recommend.html에서 저장한 값 읽기
+    const item = localStorage.getItem("donationItem") || "선택한 품목";
+    const amountRaw = localStorage.getItem("donationAmount");
+    const storeName = localStorage.getItem("donationStoreName") || "";
 
-    const debugEl = document.getElementById("debug");
-    debugEl.textContent = `이동 준비중... (${item || "no item"} / ${amount || "0"} / ${method || "no method"})`;
+    const amount = Number(amountRaw);
+    const amountText = Number.isFinite(amount) ? amount.toLocaleString() : "-";
 
-    // 파일이 진짜 있는지 확인하려면 아래 URL을 콘솔로 찍어봐도 됨
-    console.log("Redirecting to:", "payment_success.html");
+    const detailEl = document.getElementById("loading-detail");
+    const storeText = storeName ? ` · ${storeName}` : "";
 
+    // 화면 표시
+    detailEl.textContent = `이동 준비중… (${item} / ${amountText}P${storeText})`;
+
+    // ✅ 다음 페이지로 자동 이동 (원하면 payment_success.html 말고 payment.html로 바꿔도 됨)
+    // 1.2초 후 이동
     setTimeout(() => {
-      // ✅ 절대경로로도 한 번 더 안전하게 처리 (레포/폴더 구조 때문)
-      // dreamyoapp 폴더 안에 있다면 이게 더 안전함:
-      // location.href = "./payment_success.html";
-
-      location.href = "payment_success.html";
+      window.location.href = "payment.html";
+      // 또는: window.location.href = "payment_success.html";
     }, 1200);
   </script>
 </body>
 </html>
-
