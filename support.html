@@ -273,14 +273,14 @@
   </div>
 
   <script>
-    document.getElementById("support-btn").addEventListener("click", () => {
-      // ✅ 기존 결제 흐름과 동일하게(너가 쓰던 키)
-      localStorage.setItem("donationItem", "청소년 예술 교육 응원");
-      localStorage.setItem("donationAmount", "50000");
-      localStorage.setItem("donationStoreName", "드림요 응원");
+   document.getElementById("support-btn").addEventListener("click", () => {
+  localStorage.setItem("donationItem", "청소년 예술 교육 응원");
+  localStorage.setItem("donationStoreName", "드림요 응원");
 
-      window.location.href = "payment_loading.html";
-    });
+  // ✅ 이제는 결제수단(금액 입력) 화면으로
+  window.location.href = "payment_method.html";
+});
+
   </script>
 
   <script src="./pwa.js"></script>
