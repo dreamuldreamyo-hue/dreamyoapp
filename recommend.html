@@ -485,7 +485,7 @@ ${JSON.stringify(items.map(it => ({
         return;
       }
 
-      addBubble("AI가 추천 이유를 만들고 있어요… 🤖", "bot");
+    
       const ai = await geminiExplain(point, items);
 
       const intro = ai?.intro || `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`;
