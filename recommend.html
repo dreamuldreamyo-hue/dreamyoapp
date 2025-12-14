@@ -375,3 +375,52 @@
   </script>
 </body>
 </html>
+// ✅ Gemini Developer API (프론트 직접 호출) - 결제 없이 데모용
+const GEMINI_API_KEY = "여기에_너의_API_KEY_붙여넣기"; // 예: AIza...
+
+async function geminiExplain(point, items) {
+  // items: [{name, price, category, storeName ...}] 형태면 충분
+  const prompt = `
+너는 한국어로 답하는 따뜻한 챗봇 "추천해드리밍"이야.
+
+규칙:
+- 첫 문장에 사용자의 보유 포인트(${point})를 반드시 언급해.
+- 아래 items(이미 추천된 목록)만 가지고 추천 이유를 1~2문장씩 써.
+- 마지막에 선호를 묻는 질문 1개만 해.
+- 계산/추가추천/새로운 메뉴 생성 금지.
+- 출력은 JSON만.
+
+출력 형식:
+{
+ "intro": string,
+ "reasons":[{"idx":1,"reason":string},{"idx":2,"reason":string},{"idx":3,"reason":string}],
+ "followUp": string
+}
+
+items:
+${JSON.stringify(items, null, 2)}
+`.trim();
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
+    })
+  });
+
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error("Gemini API error: " + t);
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+
+  // 코드블록 제거 + JSON 파싱
+  const cleaned = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(cleaned);
+}
