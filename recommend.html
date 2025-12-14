@@ -22,20 +22,20 @@
         <div class="chat-bubble">
           안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
           <b>추천해드리밍</b> 입니다.<br /><br />
-          보유 포인트(마일리지)를 입력하면,<br />
-          기부 가능한 품목을 추천해드릴게요!<br />
+          보유 포인트(마일리지)를 입력하면<br />
+          기부 가능한 메뉴를 추천해드릴게요!<br />
           예: 5000
         </div>
       </div>
     </main>
 
-    <!-- 하단 입력창 -->
+    <!-- 입력창 -->
     <form class="chat-input-bar" id="chat-form">
       <input
         type="text"
         id="chat-input"
         class="chat-input"
-        placeholder="보유 포인트를 입력하세요 (예: 5000)"
+        placeholder="보유 포인트 입력 (예: 5000)"
         autocomplete="off"
       />
       <button type="submit" class="chat-send-button">전송</button>
@@ -44,8 +44,12 @@
 
   <script src="./pwa.js"></script>
 
-  <!-- ✅ Firebase (모듈 CDN 방식) + Firestore + AI Logic -->
+  <!-- ================= SCRIPT ================= -->
   <script type="module">
+    /* ================= Gemini API ================= */
+    const GEMINI_API_KEY = "여기에_너의_GEMINI_API_KEY";
+
+    /* ================= Firebase ================= */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore,
@@ -56,104 +60,70 @@
       collectionGroup
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-    import { getAI, getGenerativeModel } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js";
-
-    // ✅ 너가 보내준 Firebase 설정 그대로
     const firebaseConfig = {
       apiKey: "AIzaSyBo1Ezg6tzCDDCGpBNWmJfCLe8hUsmLYi4",
       authDomain: "dreamyo-e42bb.firebaseapp.com",
       projectId: "dreamyo-e42bb",
       storageBucket: "dreamyo-e42bb.firebasestorage.app",
       messagingSenderId: "266927967076",
-      appId: "1:266927967076:web:e5aca8599bc776b0774871",
-      measurementId: "G-F6MPL89R9D"
+      appId: "1:266927967076:web:e5aca8599bc776b0774871"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // (선택) 익명 로그인: Rules에 auth 조건 걸어뒀을 때 대비
-    const auth = getAuth(app);
-    try { await signInAnonymously(auth); } catch (e) { /* 익명로그인 막혀도 일단 진행 */ }
-
-    // ✅ AI Logic
-    const ai = getAI(app);
-    // 모델은 콘솔에서 허용된 걸로. (안 되면 "gemini-1.5-flash"로 바꿔봐)
-    const model = getGenerativeModel(ai, { model: "gemini-1.5-flash" });
-
-    // ---------- DOM ----------
+    /* ================= DOM ================= */
     const chatBody = document.getElementById("chat-body");
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
-    // ---------- 상태 ----------
-    let actionsShown = false;
-    let selectedItem = null;
     let menus = [];
+    let selectedItem = null;
+    let actionsShown = false;
 
-    // ---------- UI helpers ----------
+    /* ================= UI ================= */
     function addBubble(text, type) {
       const row = document.createElement("div");
       row.className = "chat-row " + type;
-
       const bubble = document.createElement("div");
       bubble.className = "chat-bubble";
-      bubble.innerHTML = String(text).replace(/\n/g, "<br />");
-
+      bubble.innerHTML = text.replace(/\n/g, "<br>");
       row.appendChild(bubble);
       chatBody.appendChild(row);
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function addCardBubble(htmlText) {
+    function addCardBubble(html) {
       const row = document.createElement("div");
       row.className = "chat-row bot";
-
       const bubble = document.createElement("div");
       bubble.className = "chat-bubble chat-bubble-card";
-      bubble.innerHTML = String(htmlText);
-
+      bubble.innerHTML = html;
       row.appendChild(bubble);
       chatBody.appendChild(row);
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function clearOptionsAndActions() {
+    function clearActions() {
       document.querySelector(".chat-options")?.remove();
       document.querySelector(".chat-actions")?.remove();
       actionsShown = false;
       selectedItem = null;
     }
 
-    // ---------- Firestore 로딩 (최대한 “네 구조”를 찾아서 가져오기) ----------
-    async function loadMenusFlexible() {
-      // 1) 최상위 컬렉션 menus (권장 구조)
+    /* ================= Firestore Load ================= */
+    async function loadMenus() {
       try {
-        const s1 = await getDocs(query(collection(db, "menus"), limit(200)));
-        if (!s1.empty) return s1.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch (e) {}
-
-      // 2) new_products/menus (collection -> doc -> collection 구조일 수도 있어 실패 가능, 그래서 다음으로)
-      // 3) collectionGroup("menus") : 어떤 경로든 menus라는 서브컬렉션을 전부 가져옴
-      try {
-        const s3 = await getDocs(query(collectionGroup(db, "menus"), limit(200)));
-        if (!s3.empty) return s3.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch (e) {}
-
-      // 4) 혹시 이전 구조 products (구버전)
-      try {
-        const s4 = await getDocs(query(collection(db, "products"), limit(200)));
-        if (!s4.empty) return s4.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch (e) {}
-
-      return [];
+        const snap = await getDocs(query(collectionGroup(db, "menus"), limit(200)));
+        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch {
+        return [];
+      }
     }
 
     function toBool(v) {
-      if (v === true) return true;
-      if (v === false) return false;
-      if (typeof v === "string") return v.toLowerCase() === "true";
+      if (typeof v === "boolean") return v;
+      if (typeof v === "string") return v === "true";
       return false;
     }
 
@@ -162,265 +132,143 @@
       return Number.isFinite(n) ? n : null;
     }
 
-    // ---------- 추천(계산은 JS가 함) ----------
-    function getRecommendedMenus(point) {
-      const candidates = menus
-        .map(m => {
-          const price = toNum(m.price ?? m.priceMileage);
-          const available = toBool(m.available);
-          return { ...m, price, available };
-        })
-        .filter(m => m.available === true && m.price !== null && m.price <= point)
-        .sort((a, b) => (a.price - b.price));
-
-      return candidates.slice(0, 3);
+    function recommend(point) {
+      return menus
+        .map(m => ({ ...m, price: toNum(m.price), available: toBool(m.available) }))
+        .filter(m => m.available && m.price !== null && m.price <= point)
+        .sort((a, b) => a.price - b.price)
+        .slice(0, 3);
     }
 
-    // ---------- Gemini: 말(이유/후속질문)만 생성 ----------
+    /* ================= Gemini ================= */
     async function getAIText(point, items) {
-      if (!items.length) {
-        return {
-          intro: `현재 ${point.toLocaleString()}P로는 추천 가능한 메뉴가 없어요 😢`,
-          reasons: [],
-          followUp: "포인트를 조금 더 모으거나, 다른 카테고리로 찾아볼까요?"
-        };
-      }
+      const prompt = `
+너는 한국어 챗봇 '추천해드리밍'이다.
 
-      const system = `
-너는 '드림요 추천해드리밍' 한국어 챗봇이다.
+규칙:
+- 첫 문장에 사용자의 포인트 ${point}를 언급
+- items만 설명
+- 계산/추가추천 금지
+- 마지막에 질문 1개
+- JSON만 출력
 
-엄격한 규칙:
-1) 계산/판단(필터링/정렬/가격 비교)은 하지 않는다. 이미 추천된 items만 설명한다.
-2) 첫 문장에 사용자의 보유 포인트를 반드시 언급한다.
-3) 각 추천 항목마다 1~2문장으로 '따뜻하고 짧은' 추천 이유를 쓴다.
-4) 마지막에 사용자의 선호를 묻는 질문을 딱 1개만 한다.
-5) 결과는 반드시 JSON만 출력한다. 다른 텍스트 금지.
+items:
+${JSON.stringify(items, null, 2)}
+      `.trim();
 
-출력 JSON 스키마:
-{
-  "intro": string,
-  "reasons": [{"id": string, "reason": string}],
-  "followUp": string
-}
-`.trim();
+      const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ role: "user", parts: [{ text: prompt }] }]
+          })
+        }
+      );
 
-      const payload = {
-        point,
-        items: items.map(it => ({
-          id: it.id,
-          name: it.name,
-          category: it.category ?? "cafe",
-          price: it.price
-        }))
-      };
-
-      const res = await model.generateContent([
-        { text: system },
-        { text: JSON.stringify(payload) }
-      ]);
-
-      const raw = res.response.text()
-        .replace(/```json|```/g, "")
-        .trim();
-
-      return JSON.parse(raw);
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+      return JSON.parse(text.replace(/```json|```/g, "").trim());
     }
 
-    // ---------- 옵션 버튼 (기부할 메뉴 선택) ----------
+    /* ================= Actions ================= */
     function showOptions(items) {
-      document.querySelector(".chat-options")?.remove();
-      if (!items.length) return;
+      const wrap = document.createElement("div");
+      wrap.className = "chat-options";
 
-      const options = document.createElement("div");
-      options.className = "chat-options";
-
-      items.forEach((item) => {
+      items.forEach(item => {
         const btn = document.createElement("button");
-        btn.type = "button";
         btn.className = "chat-option-button";
-
-        const title = document.createElement("div");
-        title.className = "chat-option-title";
-        title.textContent = `[${item.category || "기부"}] ${item.name}`;
-
-        const price = document.createElement("div");
-        price.className = "chat-option-price";
-        price.textContent = `${item.price.toLocaleString()}P`;
-
-        btn.appendChild(title);
-        btn.appendChild(price);
-
+        btn.innerHTML = `<b>${item.name}</b><br>${item.price}P`;
         btn.onclick = () => {
-          document.querySelectorAll(".chat-option-button").forEach(el => el.classList.remove("selected"));
+          document.querySelectorAll(".chat-option-button").forEach(b => b.classList.remove("selected"));
           btn.classList.add("selected");
           selectedItem = item;
         };
-
-        options.appendChild(btn);
+        wrap.appendChild(btn);
       });
 
-      chatBody.appendChild(options);
-      chatBody.scrollTop = chatBody.scrollHeight;
+      chatBody.appendChild(wrap);
     }
 
-    // ---------- 액션 버튼 ----------
     function showActions() {
       if (actionsShown) return;
       actionsShown = true;
 
-      const actions = document.createElement("div");
-      actions.className = "chat-actions";
+      const wrap = document.createElement("div");
+      wrap.className = "chat-actions";
 
-      const donateBtn = document.createElement("button");
-      donateBtn.className = "chat-action-button";
-      donateBtn.textContent = "기부하기";
-      donateBtn.onclick = () => {
-        if (!selectedItem) {
-          alert("먼저 기부할 품목을 하나 선택해 주세요!");
-          return;
-        }
-
-        localStorage.setItem("donationItem", `[${selectedItem.category || "기부"}] ${selectedItem.name}`);
-        localStorage.setItem("donationAmount", String(selectedItem.price || 0));
-        localStorage.setItem("donationItemId", selectedItem.id || "");
-
+      const donate = document.createElement("button");
+      donate.className = "chat-action-button";
+      donate.textContent = "기부하기";
+      donate.onclick = () => {
+        if (!selectedItem) return alert("메뉴를 선택해 주세요!");
+        localStorage.setItem("donationItem", selectedItem.name);
+        localStorage.setItem("donationAmount", selectedItem.price);
         window.location.href = "payment.html";
       };
 
-      const endBtn = document.createElement("button");
-      endBtn.className = "chat-action-button chat-action-sub";
-      endBtn.textContent = "종료하기";
-      endBtn.onclick = () => window.location.href = "home.html";
+      const end = document.createElement("button");
+      end.className = "chat-action-button chat-action-sub";
+      end.textContent = "종료하기";
+      end.onclick = () => location.href = "home.html";
 
-      actions.appendChild(donateBtn);
-      actions.appendChild(endBtn);
-      chatBody.appendChild(actions);
-      chatBody.scrollTop = chatBody.scrollHeight;
+      wrap.append(donate, end);
+      chatBody.appendChild(wrap);
     }
 
-    // ---------- 초기 로딩 ----------
-    addBubble("메뉴 데이터를 불러오는 중이에요…", "bot");
-    menus = await loadMenusFlexible();
+    /* ================= Init ================= */
+    addBubble("메뉴 불러오는 중이에요…", "bot");
+    menus = await loadMenus();
 
-    // 데이터가 없으면 안내
     if (!menus.length) {
-      addBubble("Firestore에서 menus 데이터를 못 찾았어 😢 (menus / collectionGroup(menus) / products를 확인해줘!)", "bot");
+      addBubble("Firestore에서 menus 데이터를 찾지 못했어요 😢", "bot");
     } else {
-      addBubble(`메뉴 ${menus.length}개 로딩 완료! 포인트를 입력해줘 😊`, "bot");
+      addBubble(`메뉴 ${menus.length}개 로딩 완료!`, "bot");
     }
 
-    // ---------- 입력 처리 ----------
-    chatForm.addEventListener("submit", async (e) => {
+    /* ================= Submit ================= */
+    chatForm.addEventListener("submit", async e => {
       e.preventDefault();
       const text = chatInput.value.trim();
       if (!text) return;
 
       addBubble(text, "user");
       chatInput.value = "";
+      clearActions();
 
-      if (!menus.length) {
-        addBubble("아직 메뉴 데이터가 없어서 추천을 못해요. Firestore에 menus 데이터를 확인해줘!", "bot");
-        return;
-      }
-
-      const num = text.match(/\d+/g);
-      if (!num) {
-        addBubble("숫자로 포인트를 입력해줘! 예: 5000", "bot");
-        return;
-      }
+      const num = text.match(/\d+/);
+      if (!num) return addBubble("숫자로 입력해 주세요!", "bot");
 
       const point = parseInt(num[0], 10);
-      clearOptionsAndActions();
+      const items = recommend(point);
 
-      const items = getRecommendedMenus(point);
-
-      // 먼저 기본 카드(빠르게)
       if (!items.length) {
-        addCardBubble(`현재 <b>${point.toLocaleString()}P</b>로는 추천 가능한 품목이 없어요 😢<br>포인트를 더 모아보거나 다시 입력해볼까요?`);
-        return;
+        return addCardBubble(`${point}P로 가능한 메뉴가 없어요 😢`);
       }
 
-      // AI 생성
-      addBubble("잠깐만요! AI가 추천 이유를 만들고 있어요… 🤖", "bot");
+      addBubble("AI가 추천 이유를 만들고 있어요 🤖", "bot");
 
-      let aiText;
+      let ai;
       try {
-        aiText = await getAIText(point, items);
-      } catch (err) {
-        console.error(err);
-        aiText = {
-          intro: `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`,
-          reasons: items.map(it => ({ id: it.id, reason: "포인트 조건에 맞고 많은 분들이 선택하는 메뉴예요!" })),
-          followUp: "음료/간식 중 어떤 쪽을 더 선호해?"
+        ai = await getAIText(point, items);
+      } catch {
+        ai = {
+          intro: `${point}P로 가능한 추천이에요!`,
+          followUp: "어떤 메뉴가 끌려요?"
         };
       }
 
-      const reasonMap = new Map((aiText.reasons || []).map(r => [r.id, r.reason]));
-      const listHtml = items.map((it, idx) => {
-        const reason = reasonMap.get(it.id) || "포인트 조건에 맞는 메뉴라 추천해요!";
-        return `${idx + 1}. <b>${it.name}</b> (${it.price.toLocaleString()}P)<br><span style="opacity:.9">${reason}</span>`;
-      }).join("<br><br>");
+      const list = items.map(
+        (i, idx) => `${idx + 1}. <b>${i.name}</b> (${i.price}P)`
+      ).join("<br>");
 
-      const card = `
-        <b>${aiText.intro || `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`}</b><br><br>
-        ${listHtml}<br><br>
-        <b>Q.</b> ${aiText.followUp || "어떤 종류를 더 원해? (예: 커피/디저트/편의점)"}
-      `;
-
-      addCardBubble(card);
+      addCardBubble(`<b>${ai.intro}</b><br><br>${list}<br><br>${ai.followUp}`);
       showOptions(items);
       showActions();
     });
-
   </script>
 </body>
 </html>
-// ✅ Gemini Developer API (프론트 직접 호출) - 결제 없이 데모용
-const GEMINI_API_KEY = "여기에_너의_API_KEY_붙여넣기"; // 예: AIza...
 
-async function geminiExplain(point, items) {
-  // items: [{name, price, category, storeName ...}] 형태면 충분
-  const prompt = `
-너는 한국어로 답하는 따뜻한 챗봇 "추천해드리밍"이야.
-
-규칙:
-- 첫 문장에 사용자의 보유 포인트(${point})를 반드시 언급해.
-- 아래 items(이미 추천된 목록)만 가지고 추천 이유를 1~2문장씩 써.
-- 마지막에 선호를 묻는 질문 1개만 해.
-- 계산/추가추천/새로운 메뉴 생성 금지.
-- 출력은 JSON만.
-
-출력 형식:
-{
- "intro": string,
- "reasons":[{"idx":1,"reason":string},{"idx":2,"reason":string},{"idx":3,"reason":string}],
- "followUp": string
-}
-
-items:
-${JSON.stringify(items, null, 2)}
-`.trim();
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
-    })
-  });
-
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error("Gemini API error: " + t);
-  }
-
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
-  // 코드블록 제거 + JSON 파싱
-  const cleaned = text.replace(/```json|```/g, "").trim();
-  return JSON.parse(cleaned);
-}
