@@ -8,39 +8,28 @@
 </head>
 
 <body>
-  <div class="screen loading-screen">
-    <div class="loading-card">
-      <h1 class="loading-title">결제 진행중…</h1>
-      <p class="loading-sub">잠시만 기다려 주세요</p>
-
-      <!-- ✅ 여기 문구가 선택한 품목/금액으로 바뀜 -->
-      <p class="loading-detail" id="loading-detail">
-        이동 준비중…
-      </p>
+  <div class="screen">
+    <div class="center">
+      <h2>결제 진행중...</h2>
+      <p>잠시만 기다려 주세요</p>
+      <p id="info" style="margin-top:8px; font-size:13px; color:#6b7280;"></p>
     </div>
   </div>
 
   <script>
-    // ✅ recommend.html에서 저장한 값 읽기
-    const item = localStorage.getItem("donationItem") || "선택한 품목";
-    const amountRaw = localStorage.getItem("donationAmount");
-    const storeName = localStorage.getItem("donationStoreName") || "";
+    // ✅ 추천 페이지에서 저장한 값 불러오기
+    const item = localStorage.getItem("donationItem") || "(품목 없음)";
+    const amount = localStorage.getItem("donationAmount") || "0";
+    const store = localStorage.getItem("donationStoreName") || "";
 
-    const amount = Number(amountRaw);
-    const amountText = Number.isFinite(amount) ? amount.toLocaleString() : "-";
+    document.getElementById("info").textContent =
+      `이동 준비중... (${item} / ${Number(amount).toLocaleString()}P / ${store})`;
 
-    const detailEl = document.getElementById("loading-detail");
-    const storeText = storeName ? ` · ${storeName}` : "";
-
-    // 화면 표시
-    detailEl.textContent = `이동 준비중… (${item} / ${amountText}P${storeText})`;
-
-    // ✅ 다음 페이지로 자동 이동 (원하면 payment_success.html 말고 payment.html로 바꿔도 됨)
-    // 1.2초 후 이동
+    // ✅ 1.5초 후 결제 완료 페이지로 이동
     setTimeout(() => {
-      window.location.href = "payment.html";
-      // 또는: window.location.href = "payment_success.html";
-    }, 1200);
+      window.location.href = "payment_success.html";
+    }, 1500);
   </script>
 </body>
 </html>
+
