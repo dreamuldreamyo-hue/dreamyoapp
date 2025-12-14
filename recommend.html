@@ -22,20 +22,21 @@
         <div class="chat-bubble">
           안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
           <b>추천해드리밍</b> 입니다.<br /><br />
-          보유 포인트(마일리지)를 입력하면<br />
-          기부 가능한 메뉴를 추천해드릴게요!<br />
+          보유 포인트(마일리지)를 입력하면,<br />
+          <b>현재 위치 1km 내</b>에서 기부 가능한 품목을<br />
+          추천해드릴게요!<br />
           예: 5000
         </div>
       </div>
     </main>
 
-    <!-- 입력창 -->
+    <!-- 하단 입력창 -->
     <form class="chat-input-bar" id="chat-form">
       <input
         type="text"
         id="chat-input"
         class="chat-input"
-        placeholder="보유 포인트 입력 (예: 5000)"
+        placeholder="보유 포인트를 입력하세요 (예: 5000)"
         autocomplete="off"
       />
       <button type="submit" class="chat-send-button">전송</button>
@@ -44,12 +45,8 @@
 
   <script src="./pwa.js"></script>
 
-  <!-- ================= SCRIPT ================= -->
+  <!-- ✅ Firebase 모듈 CDN + Firestore + (익명로그인 옵션) -->
   <script type="module">
-    /* ================= Gemini API ================= */
-    const GEMINI_API_KEY = "여기에_너의_GEMINI_API_KEY";
-
-    /* ================= Firebase ================= */
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
     import {
       getFirestore,
@@ -59,216 +56,421 @@
       limit,
       collectionGroup
     } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
+    // ✅ 너 Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBo1Ezg6tzCDDCGpBNWmJfCLe8hUsmLYi4",
       authDomain: "dreamyo-e42bb.firebaseapp.com",
       projectId: "dreamyo-e42bb",
       storageBucket: "dreamyo-e42bb.firebasestorage.app",
       messagingSenderId: "266927967076",
-      appId: "1:266927967076:web:e5aca8599bc776b0774871"
+      appId: "1:266927967076:web:e5aca8599bc776b0774871",
+      measurementId: "G-F6MPL89R9D"
     };
+
+    // ✅ (데모용) Gemini Developer API 키: 여기에 붙여넣기
+    const GEMINI_API_KEY = "AIzaSyBpAyMWV2_TzH8XTPsOVLuWFBjgSqXKSYA";
+
+    // ✅ 위치 허용 안 되면 fallback (대전 컨벤션센터 근처)
+    const FALLBACK_LOCATION = { lat: 36.3745, lng: 127.3870 };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    /* ================= DOM ================= */
+    // (선택) 익명 로그인: Firestore rules가 auth 필요할 때 대비
+    const auth = getAuth(app);
+    try { await signInAnonymously(auth); } catch (e) {}
+
+    // ---------- DOM ----------
     const chatBody = document.getElementById("chat-body");
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
-    let menus = [];
-    let selectedItem = null;
+    // ---------- 상태 ----------
     let actionsShown = false;
+    let selectedItem = null;
+    let menus = []; // Firestore에서 가져온 메뉴 목록
 
-    /* ================= UI ================= */
+    // ---------- UI helpers ----------
     function addBubble(text, type) {
       const row = document.createElement("div");
       row.className = "chat-row " + type;
+
       const bubble = document.createElement("div");
       bubble.className = "chat-bubble";
-      bubble.innerHTML = text.replace(/\n/g, "<br>");
+      bubble.innerHTML = String(text).replace(/\n/g, "<br />");
+
       row.appendChild(bubble);
       chatBody.appendChild(row);
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function addCardBubble(html) {
+    function addCardBubble(htmlText) {
       const row = document.createElement("div");
       row.className = "chat-row bot";
+
       const bubble = document.createElement("div");
       bubble.className = "chat-bubble chat-bubble-card";
-      bubble.innerHTML = html;
+      bubble.innerHTML = String(htmlText);
+
       row.appendChild(bubble);
       chatBody.appendChild(row);
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function clearActions() {
+    function clearOptionsAndActions() {
       document.querySelector(".chat-options")?.remove();
       document.querySelector(".chat-actions")?.remove();
       actionsShown = false;
       selectedItem = null;
     }
 
-    /* ================= Firestore Load ================= */
-    async function loadMenus() {
-      try {
-        const snap = await getDocs(query(collectionGroup(db, "menus"), limit(200)));
-        return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      } catch {
-        return [];
-      }
-    }
-
+    // ---------- 타입 변환 ----------
     function toBool(v) {
-      if (typeof v === "boolean") return v;
-      if (typeof v === "string") return v === "true";
+      if (v === true) return true;
+      if (v === false) return false;
+      if (typeof v === "string") return v.toLowerCase() === "true";
       return false;
     }
-
     function toNum(v) {
       const n = Number(v);
       return Number.isFinite(n) ? n : null;
     }
 
-    function recommend(point) {
-      return menus
-        .map(m => ({ ...m, price: toNum(m.price), available: toBool(m.available) }))
-        .filter(m => m.available && m.price !== null && m.price <= point)
-        .sort((a, b) => a.price - b.price)
-        .slice(0, 3);
+    // ---------- 거리 계산 (km) ----------
+    function distanceKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a =
+        Math.sin(dLat/2) * Math.sin(dLat/2) +
+        Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) *
+        Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
     }
 
-    /* ================= Gemini ================= */
-    async function getAIText(point, items) {
-      const prompt = `
-너는 한국어 챗봇 '추천해드리밍'이다.
+    // ---------- 현재 위치 가져오기 ----------
+    async function getUserLocation() {
+      if (!navigator.geolocation) {
+        return { ...FALLBACK_LOCATION, source: "fallback(no-geolocation)" };
+      }
 
-규칙:
-- 첫 문장에 사용자의 포인트 ${point}를 언급
-- items만 설명
-- 계산/추가추천 금지
-- 마지막에 질문 1개
-- JSON만 출력
+      return new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            resolve({
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              source: "gps"
+            });
+          },
+          () => {
+            resolve({ ...FALLBACK_LOCATION, source: "fallback(denied)" });
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+        );
+      });
+    }
+
+    // ---------- Firestore에서 메뉴 불러오기 (네 구조 최대한 자동 대응) ----------
+    async function loadMenusFlexible() {
+      // 1) 최상위 menus
+      try {
+        const s1 = await getDocs(query(collection(db, "menus"), limit(300)));
+        if (!s1.empty) return s1.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {}
+
+      // 2) 어떤 경로든 "menus" 서브컬렉션 전부 (new_products/menus 포함 가능)
+      try {
+        const s2 = await getDocs(query(collectionGroup(db, "menus"), limit(300)));
+        if (!s2.empty) return s2.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {}
+
+      // 3) 구버전 products
+      try {
+        const s3 = await getDocs(query(collection(db, "products"), limit(300)));
+        if (!s3.empty) return s3.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {}
+
+      return [];
+    }
+
+    // ---------- 추천 후보 만들기: (1km) + (가격<=포인트) + available=true ----------
+    function getRecommendedMenus(point, userLat, userLng) {
+      const candidates = menus
+        .map(m => {
+          const price = toNum(m.price ?? m.priceMileage ?? m.amount);
+          const available = toBool(m.available);
+          const lat = toNum(m.lat);
+          const lng = toNum(m.lng);
+          const pop = toNum(m.popularityScore) ?? 0;
+
+          // lat/lng 없으면 제외 (위치 기반 조건)
+          if (lat === null || lng === null) return null;
+
+          const dist = distanceKm(userLat, userLng, lat, lng);
+
+          return {
+            ...m,
+            price,
+            available,
+            lat,
+            lng,
+            distanceKm: dist,
+            popularityScoreNum: pop
+          };
+        })
+        .filter(Boolean)
+        .filter(m => m.available === true)
+        .filter(m => m.distanceKm <= 1.0)
+        .filter(m => m.price !== null && m.price <= point)
+        // 정렬: 가까운 순 -> 가격 낮은 순 -> 인기 높은 순
+        .sort((a, b) => {
+          if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
+          if (a.price !== b.price) return a.price - b.price;
+          return (b.popularityScoreNum ?? 0) - (a.popularityScoreNum ?? 0);
+        });
+
+      return candidates.slice(0, 3);
+    }
+
+    // ---------- Gemini 호출: "설명만" 생성 ----------
+    async function geminiExplain(point, items, locationSource) {
+      // 키 없으면 바로 실패 처리 → fallback 문구로
+      if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("여기에_너의")) {
+        throw new Error("GEMINI_API_KEY not set");
+      }
+
+      const prompt = `
+너는 한국어로 답하는 따뜻한 챗봇 "추천해드리밍"이야.
+
+엄격한 규칙:
+- 계산/필터링/추가 추천은 절대 하지 마. 아래 items(이미 추천된 목록)만 설명해.
+- 첫 문장에 사용자의 보유 포인트(${point})를 반드시 언급해.
+- 각 item마다 추천 이유를 1~2문장으로 짧게 써.
+- 마지막에 선호를 묻는 질문 1개만 해.
+- 출력은 JSON만. 다른 텍스트/코드블록 금지.
+
+출력 JSON 형식:
+{
+  "intro": "string",
+  "reasons": [{"id":"string","reason":"string"}],
+  "followUp": "string"
+}
+
+참고: locationSource="${locationSource}" (gps면 '현재 위치 기반', fallback이면 '대전컨벤션센터 기준'처럼 자연스럽게만 언급 가능)
 
 items:
-${JSON.stringify(items, null, 2)}
+${JSON.stringify(items.map(it => ({
+  id: it.id,
+  name: it.name,
+  storeName: it.storeName ?? "",
+  price: it.price,
+  distanceKm: Number(it.distanceKm?.toFixed(2))
+})), null, 2)}
       `.trim();
 
-      const res = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + GEMINI_API_KEY,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: prompt }] }]
-          })
-        }
-      );
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.7, maxOutputTokens: 350 }
+        })
+      });
+
+      if (!res.ok) {
+        const t = await res.text();
+        throw new Error("Gemini API error: " + t);
+      }
 
       const data = await res.json();
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-      return JSON.parse(text.replace(/```json|```/g, "").trim());
+
+      // 혹시 모델이 말 섞으면 JSON만 뽑아내기
+      const cleaned = String(text).replace(/```json|```/g, "").trim();
+      try {
+        return JSON.parse(cleaned);
+      } catch {
+        const m = cleaned.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error("Gemini returned non-JSON");
+        return JSON.parse(m[0]);
+      }
     }
 
-    /* ================= Actions ================= */
+    // ---------- 옵션 버튼 ----------
     function showOptions(items) {
-      const wrap = document.createElement("div");
-      wrap.className = "chat-options";
+      document.querySelector(".chat-options")?.remove();
+      if (!items.length) return;
 
-      items.forEach(item => {
+      const options = document.createElement("div");
+      options.className = "chat-options";
+
+      items.forEach((item) => {
         const btn = document.createElement("button");
+        btn.type = "button";
         btn.className = "chat-option-button";
-        btn.innerHTML = `<b>${item.name}</b><br>${item.price}P`;
+
+        const title = document.createElement("div");
+        title.className = "chat-option-title";
+        title.textContent = `${item.name}`;
+
+        const sub = document.createElement("div");
+        sub.className = "chat-option-price";
+        const dist = Number(item.distanceKm ?? 0).toFixed(2);
+        sub.textContent = `${item.price.toLocaleString()}P · ${dist}km`;
+
+        btn.appendChild(title);
+        btn.appendChild(sub);
+
         btn.onclick = () => {
-          document.querySelectorAll(".chat-option-button").forEach(b => b.classList.remove("selected"));
+          document.querySelectorAll(".chat-option-button").forEach(el => el.classList.remove("selected"));
           btn.classList.add("selected");
           selectedItem = item;
         };
-        wrap.appendChild(btn);
+
+        options.appendChild(btn);
       });
 
-      chatBody.appendChild(wrap);
+      chatBody.appendChild(options);
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
 
+    // ---------- 액션 버튼 ----------
     function showActions() {
       if (actionsShown) return;
       actionsShown = true;
 
-      const wrap = document.createElement("div");
-      wrap.className = "chat-actions";
+      const actions = document.createElement("div");
+      actions.className = "chat-actions";
 
-      const donate = document.createElement("button");
-      donate.className = "chat-action-button";
-      donate.textContent = "기부하기";
-      donate.onclick = () => {
-        if (!selectedItem) return alert("메뉴를 선택해 주세요!");
-        localStorage.setItem("donationItem", selectedItem.name);
-        localStorage.setItem("donationAmount", selectedItem.price);
+      const donateBtn = document.createElement("button");
+      donateBtn.className = "chat-action-button";
+      donateBtn.textContent = "기부하기";
+      donateBtn.onclick = () => {
+        if (!selectedItem) {
+          alert("먼저 기부할 품목을 하나 선택해 주세요!");
+          return;
+        }
+
+        localStorage.setItem("donationItem", `${selectedItem.name}`);
+        localStorage.setItem("donationAmount", String(selectedItem.price || 0));
+        localStorage.setItem("donationItemId", selectedItem.id || "");
+
         window.location.href = "payment.html";
       };
 
-      const end = document.createElement("button");
-      end.className = "chat-action-button chat-action-sub";
-      end.textContent = "종료하기";
-      end.onclick = () => location.href = "home.html";
+      const endBtn = document.createElement("button");
+      endBtn.className = "chat-action-button chat-action-sub";
+      endBtn.textContent = "종료하기";
+      endBtn.onclick = () => window.location.href = "home.html";
 
-      wrap.append(donate, end);
-      chatBody.appendChild(wrap);
+      actions.appendChild(donateBtn);
+      actions.appendChild(endBtn);
+      chatBody.appendChild(actions);
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    /* ================= Init ================= */
-    addBubble("메뉴 불러오는 중이에요…", "bot");
-    menus = await loadMenus();
+    // ---------- 초기 로딩 ----------
+    addBubble("메뉴 데이터를 불러오는 중이에요…", "bot");
+    menus = await loadMenusFlexible();
 
     if (!menus.length) {
-      addBubble("Firestore에서 menus 데이터를 찾지 못했어요 😢", "bot");
+      addBubble("Firestore에서 menus 데이터를 못 찾았어 😢  (collectionGroup('menus') / products 확인해줘!)", "bot");
+      addBubble("✅ 그리고 위치 기반을 쓰려면 각 메뉴 문서에 lat/lng(숫자) 필드가 있어야 해!", "bot");
     } else {
-      addBubble(`메뉴 ${menus.length}개 로딩 완료!`, "bot");
+      addBubble(`메뉴 ${menus.length}개 로딩 완료! 이제 포인트를 입력해줘 😊`, "bot");
+      addBubble("📍 포인트 입력하면 위치 권한을 요청하고, 1km 내 매장만 추천할게요!", "bot");
     }
 
-    /* ================= Submit ================= */
-    chatForm.addEventListener("submit", async e => {
+    // ---------- 입력 처리 ----------
+    chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = chatInput.value.trim();
       if (!text) return;
 
       addBubble(text, "user");
       chatInput.value = "";
-      clearActions();
 
-      const num = text.match(/\d+/);
-      if (!num) return addBubble("숫자로 입력해 주세요!", "bot");
+      if (!menus.length) {
+        addBubble("아직 메뉴 데이터가 없어서 추천을 못해요. Firestore 데이터를 먼저 확인해줘!", "bot");
+        return;
+      }
+
+      const num = text.match(/\d+/g);
+      if (!num) {
+        addBubble("숫자로 포인트를 입력해줘! 예: 5000", "bot");
+        return;
+      }
 
       const point = parseInt(num[0], 10);
-      const items = recommend(point);
+      clearOptionsAndActions();
+
+      // 1) 위치 받기
+      addBubble("📍 위치 확인 중… (권한 허용하면 더 정확해져요!)", "bot");
+      const loc = await getUserLocation();
+      const usingFallback = loc.source.startsWith("fallback");
+
+      if (usingFallback) {
+        addBubble("위치 권한이 없어서 대전컨벤션센터 기준으로 계산할게요!", "bot");
+      } else {
+        addBubble("현재 위치 기준으로 1km 내에서 추천할게요!", "bot");
+      }
+
+      // 2) 위치 + 포인트 기반 추천
+      const items = getRecommendedMenus(point, loc.lat, loc.lng);
 
       if (!items.length) {
-        return addCardBubble(`${point}P로 가능한 메뉴가 없어요 😢`);
+        addCardBubble(
+          `현재 <b>${point.toLocaleString()}P</b>로는<br>` +
+          `<b>1km 내</b>에서 기부 가능한 품목이 없어요 😢<br>` +
+          `포인트를 더 모으거나, 위치 권한을 허용하고 다시 시도해볼까요?`
+        );
+        return;
       }
 
-      addBubble("AI가 추천 이유를 만들고 있어요 🤖", "bot");
+      // 3) Gemini로 “이유/후속 질문” 생성
+      addBubble("🤖 제미나이가 추천 이유를 만들고 있어요…", "bot");
 
-      let ai;
+      let aiText;
       try {
-        ai = await getAIText(point, items);
-      } catch {
-        ai = {
-          intro: `${point}P로 가능한 추천이에요!`,
-          followUp: "어떤 메뉴가 끌려요?"
+        aiText = await geminiExplain(point, items, loc.source);
+      } catch (err) {
+        console.error(err);
+        aiText = {
+          intro: `${point.toLocaleString()}P로 가능한 추천이에요!`,
+          reasons: items.map(it => ({ id: it.id, reason: "현재 위치 근처에서 포인트 조건에 맞는 메뉴라 추천해요!" })),
+          followUp: "커피/디저트/편의점 중 어떤 쪽이 더 끌려요?"
         };
+        addBubble("⚠️ 제미나이 호출이 실패해서 기본 문구로 보여줄게요 (API 키/쿼터 확인 필요)", "bot");
       }
 
-      const list = items.map(
-        (i, idx) => `${idx + 1}. <b>${i.name}</b> (${i.price}P)`
-      ).join("<br>");
+      const reasonMap = new Map((aiText.reasons || []).map(r => [r.id, r.reason]));
 
-      addCardBubble(`<b>${ai.intro}</b><br><br>${list}<br><br>${ai.followUp}`);
+      const listHtml = items.map((it, idx) => {
+        const reason = reasonMap.get(it.id) || "포인트 조건과 거리 조건에 맞는 메뉴라 추천해요!";
+        const dist = Number(it.distanceKm ?? 0).toFixed(2);
+        const store = it.storeName ? ` · ${it.storeName}` : "";
+        return `${idx + 1}. <b>${it.name}</b> (${it.price.toLocaleString()}P · ${dist}km${store})<br><span style="opacity:.9">${reason}</span>`;
+      }).join("<br><br>");
+
+      const intro = aiText.intro || `${point.toLocaleString()}P로 가능한 추천이에요!`;
+      const followUp = aiText.followUp || "어떤 메뉴가 더 끌려요?";
+
+      addCardBubble(`
+        <b>${intro}</b><br><br>
+        ${listHtml}<br><br>
+        <b>Q.</b> ${followUp}
+      `);
+
       showOptions(items);
       showActions();
     });
+
   </script>
 </body>
 </html>
-
