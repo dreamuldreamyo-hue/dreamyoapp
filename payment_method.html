@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>결제수단</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    :root{
+      --bg:#F5F6F8;
+      --card:#FFFFFF;
+      --text:#111827;
+      --sub:#6B7280;
+      --line:#E5E7EB;
+      --blue:#3B5BFF;
+      --radius:14px;
+    }
+    body{ background: var(--bg); }
+
+    .wrap{
+      min-height:100vh;
+      background: var(--bg);
+      padding-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    }
+
+    /* 상단 */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      padding-top: env(safe-area-inset-top);
+      border-bottom: 1px solid rgba(0,0,0,0.03);
+    }
+    .topbar-row{
+      height: 48px;
+      display:grid;
+      grid-template-columns: 48px 1fr 48px;
+      align-items:center;
+      padding: 0 8px;
+    }
+    .back{
+      width:48px; height:48px;
+      display:flex; align-items:center; justify-content:center;
+      text-decoration:none;
+      color: var(--text);
+      font-size: 26px;
+    }
+    .title{
+      text-align:center;
+      font-weight:800;
+      font-size: 17px;
+      color: var(--text);
+    }
+
+    .container{
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 14px 16px;
+    }
+
+    .section-title{
+      color: var(--sub);
+      font-weight:700;
+      font-size: 13px;
+      margin: 14px 0 10px;
+    }
+
+    /* 금액 입력 카드 */
+    .amount-card{
+      background: var(--card);
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 6px 18px rgba(17,24,39,0.06);
+    }
+    .amount-row{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 12px;
+    }
+    .amount-label{
+      color: var(--sub);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .amount-input{
+      width: 100%;
+      margin-top: 10px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      background:#F9FAFB;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 12px;
+    }
+    .amount-input input{
+      border:none;
+      outline:none;
+      background: transparent;
+      width: 100%;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .amount-input span{
+      color: var(--sub);
+      font-weight:700;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .quick{
+      display:flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .quick button{
+      border:1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text);
+      cursor:pointer;
+    }
+    .quick button:active{ transform: translateY(1px); }
+
+    /* 리스트 카드들 */
+    .list-card{
+      background: var(--card);
+      border:1px solid rgba(0,0,0,0.06);
+      border-radius: var(--radius);
+      overflow:hidden;
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+    .row:last-child{ border-bottom:none; }
+
+    .left{
+      display:flex; align-items:center; gap: 12px;
+      min-width: 0;
+    }
+    .thumb{
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-weight:900;
+      flex: 0 0 auto;
+    }
+    .thumb.gray{ background:#6B7280; }
+    .thumb.green{ background:#22C55E; }
+    .thumb.white{
+      background:#fff;
+      border:1px solid var(--line);
+      color:#111827;
+      font-weight:800;
+    }
+
+    .txt{
+      min-width:0;
+    }
+    .txt .main{
+      font-weight: 900;
+      color: var(--text);
+      font-size: 14px;
+      line-height:1.2;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+    .txt .sub{
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--sub);
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+    }
+
+    .more{
+      color:#9CA3AF;
+      font-size: 18px;
+      line-height: 1;
+      padding: 6px 8px;
+    }
+
+    /* 결제 버튼 */
+    .paybar{
+      position: sticky;
+      bottom: 0;
+      padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+      background: linear-gradient(to top, rgba(245,246,248,0.98), rgba(245,246,248,0.60));
+      backdrop-filter: blur(10px);
+    }
+    .paybtn{
+      width: 100%;
+      height: 52px;
+      border:none;
+      border-radius: 14px;
+      background: var(--blue);
+      color:#fff;
+      font-weight: 900;
+      font-size: 16px;
+      box-shadow: 0 10px 22px rgba(59,91,255,0.25);
+      cursor:pointer;
+    }
+    .paybtn:disabled{
+      background:#CBD5E1;
+      box-shadow:none;
+      cursor:not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+
+    <!-- Top -->
+    <header class="topbar">
+      <div class="topbar-row">
+        <a class="back" href="support.html" aria-label="뒤로">‹</a>
+        <div class="title">결제수단</div>
+        <div></div>
+      </div>
+    </header>
+
+    <div class="container">
+      <!-- ✅ 금액 입력 섹션 추가 -->
+      <div class="amount-card">
+        <div class="amount-row">
+          <div>
+            <div class="amount-label">기부 금액</div>
+            <div style="margin-top:6px; font-weight:900; color:#111827;">
+              청소년 예술 교육 응원
+            </div>
+          </div>
+        </div>
+
+        <div class="amount-input">
+          <input id="amount" inputmode="numeric" placeholder="예: 5000" />
+          <span>원</span>
+        </div>
+
+        <div class="quick">
+          <button type="button" data-v="5000">5,000</button>
+          <button type="button" data-v="10000">10,000</button>
+          <button type="button" data-v="30000">30,000</button>
+          <button type="button" data-v="50000">50,000</button>
+        </div>
+      </div>
+
+      <!-- 등록된 카드 -->
+      <div class="section-title">등록된 카드 2</div>
+      <div class="list-card" id="card-list">
+        <div class="row" data-method="KB카드">
+          <div class="left">
+            <div class="thumb gray">KB</div>
+            <div class="txt">
+              <div class="main">KB카드 (3918)</div>
+              <div class="sub">KB 톡톡 Pay카드</div>
+            </div>
+          </div>
+          <div class="more">⋮</div>
+        </div>
+
+        <div class="row" data-method="NH카드">
+          <div class="left">
+            <div class="thumb green">NH</div>
+            <div class="txt">
+              <div class="main">NH카드 (4571)</div>
+              <div class="sub">NH20 해봄체크</div>
+            </div>
+          </div>
+          <div class="more">⋮</div>
+        </div>
+
+        <div class="row" id="add-card">
+          <div class="left">
+            <div class="thumb white">＋</div>
+            <div class="txt">
+              <div class="main">카드 등록하기</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 간편결제 -->
+      <div class="section-title" style="margin-top:18px;">간편결제</div>
+      <div class="list-card" id="easy-list">
+        <div class="row" data-method="토스페이">
+          <div class="left">
+            <div class="thumb white">t</div>
+            <div class="txt">
+              <div class="main">토스페이</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" data-method="네이버페이">
+          <div class="left">
+            <div class="thumb white">N</div>
+            <div class="txt">
+              <div class="main">네이버페이</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" data-method="카카오페이">
+          <div class="left">
+            <div class="thumb white">pay</div>
+            <div class="txt">
+              <div class="main">카카오페이</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" data-method="페이코">
+          <div class="left">
+            <div class="thumb white">P</div>
+            <div class="txt">
+              <div class="main">페이코</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결제 버튼 -->
+    <div class="paybar">
+      <div class="container" style="padding:0;">
+        <button class="paybtn" id="paybtn" disabled>결제하기</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== 상태 =====
+    let selectedMethod = "";
+    const amountEl = document.getElementById("amount");
+    const payBtn = document.getElementById("paybtn");
+
+    // 기존 응원(아이템/스토어명)은 고정값으로 세팅 (원하면 support.html에서 넘겨도 됨)
+    const donationItem = localStorage.getItem("donationItem") || "청소년 예술 교육 응원";
+    const donationStore = localStorage.getItem("donationStoreName") || "드림요 응원";
+    localStorage.setItem("donationItem", donationItem);
+    localStorage.setItem("donationStoreName", donationStore);
+
+    // ===== 유틸 =====
+    function onlyNumber(v){
+      return (v || "").toString().replace(/[^\d]/g, "");
+    }
+    function formatK(v){
+      const n = Number(v || 0);
+      return n ? n.toLocaleString() : "";
+    }
+    function validate(){
+      const amt = Number(onlyNumber(amountEl.value));
+      const ok = amt >= 1000 && !!selectedMethod;
+      payBtn.disabled = !ok;
+    }
+
+    // ===== 금액 입력 =====
+    amountEl.addEventListener("input", () => {
+      const raw = onlyNumber(amountEl.value);
+      amountEl.value = raw ? formatK(raw) : "";
+      validate();
+    });
+
+    document.querySelectorAll(".quick button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const v = btn.getAttribute("data-v");
+        amountEl.value = formatK(v);
+        validate();
+      });
+    });
+
+    // ===== 결제수단 선택 (row 클릭) =====
+    function selectRow(row){
+      // 선택 UI
+      document.querySelectorAll(".row").forEach(r=> r.style.outline = "none");
+      row.style.outline = "2px solid rgba(59,91,255,0.35)";
+      row.style.borderRadius = "12px";
+
+      selectedMethod = row.getAttribute("data-method") || "";
+      validate();
+    }
+
+    document.querySelectorAll("#card-list .row[data-method], #easy-list .row[data-method]").forEach(row=>{
+      row.addEventListener("click", ()=> selectRow(row));
+    });
+
+    document.getElementById("add-card").addEventListener("click", ()=>{
+      alert("데모에서는 카드 등록 기능은 생략했어!");
+    });
+
+    // ===== 결제 진행 =====
+    payBtn.addEventListener("click", ()=>{
+      const amt = Number(onlyNumber(amountEl.value));
+      if (!amt) return;
+
+      // ✅ 기존 성공페이지(payment_success.html)가 읽는 키로 저장
+      localStorage.setItem("donationAmount", String(amt));
+      localStorage.setItem("donationPayMethod", selectedMethod); // (선택) 성공페이지에 표시하고 싶으면 사용
+
+      // 로딩 페이지로 이동 → 로딩 페이지가 payment_success.html로 넘겨주면 끝
+      window.location.href = "payment_loading.html";
+    });
+  </script>
+
+  <script src="./pwa.js"></script>
+</body>
+</html>
