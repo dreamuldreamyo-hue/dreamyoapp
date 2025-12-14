@@ -268,8 +268,9 @@
       const items = getRecommendedItems(point);
 
       setTimeout(() => {
-        const reply = makeRecommendationText(point, items);
-        addCardBubble(reply);
+       const aiReply = await getAIRecommendation(point, items);
+addCardBubble(aiReply.text);
+
         showOptions(items);
         showActions();
       }, 600);
