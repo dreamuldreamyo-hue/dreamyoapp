@@ -21,9 +21,10 @@
       <div class="chat-row bot">
         <div class="chat-bubble">
           안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
-          <b>드리미 입니다.<br /><br />
+          <b>드리미</b> 입니다.<br /><br />
           보유 포인트(마일리지)를 입력하면,<br />
-          <b>현재 위치 1km 이내</b>에서 기부 가능한 품목을 추천해드릴게요!<br />
+          <b>현재 위치 기준</b>으로 기부 가능한 품목을 추천해드릴게요!<br />
+          (기본 1km → 없으면 3km → 그래도 없으면 DCC 기준)<br />
           예: 5000
         </div>
       </div>
@@ -59,11 +60,10 @@
     /***********************
      * ✅ 0) 설정값
      ***********************/
-    // 🔥 여기에 Gemini Developer API 키 넣어줘 (데모용 프론트 직접 호출)
-    // 키 발급: Google AI Studio(aistudio.google.com) → Get API key
+    // ⚠️ 실제 해커톤 제출/공개 저장소에서는 키를 파일에 박아 넣는 건 비추천.
+    // 지금은 "데모용 프론트 직접 호출" 버전으로 유지.
     const GEMINI_API_KEY = "AIzaSyBpAyMWV2_TzH8XTPsOVLuWFBjgSqXKSYA";
 
-    // ✅ 너가 준 Firebase 설정
     const firebaseConfig = {
       apiKey: "AIzaSyBo1Ezg6tzCDDCGpBNWmJfCLe8hUsmLYi4",
       authDomain: "dreamyo-e42bb.firebaseapp.com",
@@ -74,9 +74,10 @@
       measurementId: "G-F6MPL89R9D"
     };
 
-    // 위치권한 거부 시 fallback(대전컨벤션센터 근처 예시)
-    const FALLBACK_LOCATION = { lat: 36.3745, lng: 127.3870 };
-    const RADIUS_KM = 1.0;
+    // 위치권한/PC 위치 이상할 때 대비용 (대전 DCC 근처)
+    const DCC_LOCATION = { lat: 36.3745, lng: 127.3870 };
+    const RADIUS_1 = 1.0;
+    const RADIUS_2 = 3.0;
 
     /***********************
      * ✅ 1) Firebase 초기화
@@ -84,9 +85,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // (권장) 익명로그인: rules가 auth 필요일 때 대비
+    // 익명로그인 (rules가 auth 필요일 때 대비)
     const auth = getAuth(app);
-    try { await signInAnonymously(auth); } catch (e) { /* 익명 로그인 막혀도 계속 */ }
+    try { await signInAnonymously(auth); } catch (e) {}
 
     /***********************
      * ✅ 2) DOM/상태
@@ -169,7 +170,7 @@
     function getCurrentLocation() {
       return new Promise((resolve) => {
         if (!navigator.geolocation) {
-          resolve({ ...FALLBACK_LOCATION, source: "fallback(no-geolocation)" });
+          resolve({ ...DCC_LOCATION, source: "fallback(no-geolocation)" });
           return;
         }
 
@@ -182,7 +183,7 @@
             });
           },
           () => {
-            resolve({ ...FALLBACK_LOCATION, source: "fallback(denied)" });
+            resolve({ ...DCC_LOCATION, source: "fallback(denied)" });
           },
           { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
         );
@@ -204,34 +205,32 @@
     }
 
     /***********************
-     * ✅ 7) 추천 로직 (JS가 “필터/정렬” 담당)
-     * - 1) available true
-     * - 2) price <= point
-     * - 3) storeId로 stores 찾아서 1km 이내
+     * ✅ 7) 추천 로직
      ***********************/
-    function getRecommended(point, userLoc) {
-      const candidates = menus
+    function buildCandidates(point, baseLoc) {
+      return menus
         .map(menu => {
           const price = toNum(menu.price ?? menu.priceMileage);
           const available = toBool(menu.available);
-          const storeId = menu.storeId; // 예: "store"
+          const storeId = menu.storeId; // ⭐️ 이 값이 stores 문서ID랑 같아야 함
           const store = storeId ? storesMap.get(storeId) : null;
 
-          // store lat/lng
           const sLat = store ? toNum(store.lat) : null;
           const sLng = store ? toNum(store.lng) : null;
 
           let distanceKm = null;
           if (sLat !== null && sLng !== null) {
-            distanceKm = haversineKm(userLoc.lat, userLoc.lng, sLat, sLng);
+            distanceKm = haversineKm(baseLoc.lat, baseLoc.lng, sLat, sLng);
           }
 
           return {
-            ...menu,
             id: menu.id,
+            name: menu.name ?? "",
+            category: menu.category ?? "",
+            type: menu.type ?? "",
             price,
             available,
-            storeId,
+            storeId: storeId ?? "",
             storeName: menu.storeName ?? (store?.name ?? ""),
             storeAddress: store?.address ?? "",
             storeLat: sLat,
@@ -241,27 +240,54 @@
         })
         .filter(x => x.available === true)
         .filter(x => x.price !== null && x.price <= point)
-        .filter(x => x.distanceKm !== null && x.distanceKm <= RADIUS_KM)
+        .filter(x => x.distanceKm !== null); // 거리 계산 가능한 것만
+    }
+
+    function pickTop3(list) {
+      return list
         .sort((a, b) => {
-          // 가까운 순 -> 가격 낮은 순
           if (a.distanceKm !== b.distanceKm) return a.distanceKm - b.distanceKm;
           return a.price - b.price;
-        });
+        })
+        .slice(0, 3);
+    }
 
-      return candidates.slice(0, 3);
+    function getRecommendedSmart(point, userLoc) {
+      // 1) 사용자 위치 1km
+      const c1 = buildCandidates(point, userLoc).filter(x => x.distanceKm <= RADIUS_1);
+      if (c1.length) {
+        return { items: pickTop3(c1), used: { base: userLoc, radiusKm: RADIUS_1, mode: "user" } };
+      }
+
+      // 2) 사용자 위치 3km
+      const c2 = buildCandidates(point, userLoc).filter(x => x.distanceKm <= RADIUS_2);
+      if (c2.length) {
+        return { items: pickTop3(c2), used: { base: userLoc, radiusKm: RADIUS_2, mode: "user" } };
+      }
+
+      // 3) DCC 1km
+      const c3 = buildCandidates(point, DCC_LOCATION).filter(x => x.distanceKm <= RADIUS_1);
+      if (c3.length) {
+        return { items: pickTop3(c3), used: { base: DCC_LOCATION, radiusKm: RADIUS_1, mode: "dcc" } };
+      }
+
+      // 4) DCC 3km
+      const c4 = buildCandidates(point, DCC_LOCATION).filter(x => x.distanceKm <= RADIUS_2);
+      if (c4.length) {
+        return { items: pickTop3(c4), used: { base: DCC_LOCATION, radiusKm: RADIUS_2, mode: "dcc" } };
+      }
+
+      return { items: [], used: { base: userLoc, radiusKm: RADIUS_1, mode: "none" } };
     }
 
     /***********************
      * ✅ 8) Gemini Developer API: “설명/후속질문”만 생성
      ***********************/
     async function geminiExplain(point, items) {
-      if (!GEMINI_API_KEY || GEMINI_API_KEY.includes("여기에_")) {
-        // 키 없으면 그냥 기본 멘트로 처리
-        return null;
-      }
+      if (!GEMINI_API_KEY) return null;
 
       const prompt = `
-너는 한국어로 답하는 따뜻한 챗봇 "추천해드리밍"이야.
+너는 한국어로 답하는 따뜻한 챗봇 "드리미"야.
 
 엄격한 규칙:
 - 계산/판단/추가추천 금지. 아래 items(이미 추천된 목록)만 설명한다.
@@ -294,7 +320,7 @@ ${JSON.stringify(items.map(it => ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.7, maxOutputTokens: 300 }
+          generationConfig: { temperature: 0.7, maxOutputTokens: 320 }
         })
       });
 
@@ -401,7 +427,7 @@ ${JSON.stringify(items.map(it => ({
       storesMap = await loadStores();
 
       addBubble(`메뉴 ${menus.length}개 · 매장 ${storesMap.size}개 로딩 완료! 포인트를 입력해줘 😊`, "bot");
-      addBubble(`📍 포인트 입력 시 위치 권한을 요청하고, 1km 이내 매장만 추천할게요!`, "bot");
+      addBubble(`📍 포인트 입력 시 위치 권한을 요청하고, 기본 1km(없으면 3km)로 추천할게요!`, "bot");
     } catch (e) {
       console.error(e);
       addBubble("Firestore 데이터를 불러오지 못했어 😢 (Rules/컬렉션 이름/권한 확인)", "bot");
@@ -435,31 +461,36 @@ ${JSON.stringify(items.map(it => ({
       addBubble("📍 위치 확인 중… (권한을 허용하면 더 정확해져요!)", "bot");
       const userLoc = await getCurrentLocation();
 
-      if (userLoc.source.startsWith("fallback")) {
-        addBubble("위치 권한이 없어서 대전컨벤션센터 기준으로 계산할게요!", "bot");
-      } else {
-        addBubble("현재 위치 기준으로 1km 이내에서 추천할게요!", "bot");
-      }
+      // 기준좌표 표시(디버그용인데, 사용자도 이해하기 쉬움)
+      addBubble(`📌 기준 좌표: ${userLoc.lat.toFixed(6)}, ${userLoc.lng.toFixed(6)} (${userLoc.source})`, "bot");
 
-      const items = getRecommended(point, userLoc);
+      const { items, used } = getRecommendedSmart(point, userLoc);
+
+      // 어떤 기준으로 추천했는지 안내
+      if (used.mode === "user") {
+        addBubble(`현재 위치 기준 ${used.radiusKm}km 이내에서 추천할게요!`, "bot");
+      } else if (used.mode === "dcc") {
+        addBubble(`현재 위치에서 후보가 없어서, DCC 기준 ${used.radiusKm}km로 추천할게요!`, "bot");
+      }
 
       if (!items.length) {
         addCardBubble(`
           현재 <b>${point.toLocaleString()}P</b>로는<br/>
-          <b>1km 이내</b>에서 기부 가능한 품목이 없어요 😢<br/><br/>
-          - 위치 권한을 허용하거나<br/>
-          - 포인트를 더 올려서 다시 시도해볼까요?
+          <b>근처 매장(1~3km)</b>에서 기부 가능한 품목이 없어요 😢<br/><br/>
+          ✅ 확인 포인트<br/>
+          1) menus.storeId 값이 stores 문서ID와 정확히 같은지<br/>
+          2) stores 문서에 lat/lng가 숫자인지<br/>
+          3) 메뉴 available=true 인지
         `);
         return;
       }
 
       addBubble("AI가 추천 이유를 만들고 있어요… 🤖", "bot");
-
       const ai = await geminiExplain(point, items);
 
       const intro = ai?.intro || `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`;
       const reasonsMap = new Map((ai?.reasons || []).map(r => [r.id, r.reason]));
-      const followUp = ai?.followUp || "커피/디저트 중 어떤 쪽이 더 좋아?";
+      const followUp = ai?.followUp || "커피/편의점/디저트 중 어떤 쪽이 더 좋아?";
 
       const listHtml = items.map((it, idx) => {
         const reason = reasonsMap.get(it.id) || "지금 포인트로 가능하고, 가까운 매장이라 추천해요!";
