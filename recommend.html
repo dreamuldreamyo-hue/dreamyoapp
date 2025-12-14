@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
   <title>추천해드리밍</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-  <script src="./pwa.js"></script>
-</body>
-</html>
+
 <body>
   <div class="screen chat-screen">
 
@@ -21,14 +18,13 @@
 
     <!-- 채팅 영역 -->
     <main class="chat-body" id="chat-body">
-      <!-- 처음에 보이는 봇 인사말 -->
       <div class="chat-row bot">
         <div class="chat-bubble">
           안녕하세요! 😊 저는 드림요의 AI 챗봇<br />
           <b>추천해드리밍</b> 입니다.<br /><br />
-          기차 마일리지로 기부할 수 있는 품목을<br />
-          추천해드릴게요.<br />
-          보유 포인트를 입력해 주세요!
+          보유 포인트(마일리지)를 입력하면,<br />
+          기부 가능한 품목을 추천해드릴게요!<br />
+          예: 5000
         </div>
       </div>
     </main>
@@ -39,120 +35,201 @@
         type="text"
         id="chat-input"
         class="chat-input"
-        placeholder="보유 마일리지를 입력하세요 (예: 5000)"
+        placeholder="보유 포인트를 입력하세요 (예: 5000)"
         autocomplete="off"
       />
       <button type="submit" class="chat-send-button">전송</button>
     </form>
   </div>
 
-   <!-- 🔥 Firebase SDK 추가 -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-ai-compat.js"></script>
-  <script src="firebase-init.js"></script>
+  <script src="./pwa.js"></script>
 
-  <!-- 🔥 Firestore 기반 추천 챗봇 로직 -->
-  <script>
+  <!-- ✅ Firebase (모듈 CDN 방식) + Firestore + AI Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      query,
+      limit,
+      collectionGroup
+    } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+    import { getAI, getGenerativeModel } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-ai.js";
+
+    // ✅ 너가 보내준 Firebase 설정 그대로
+    const firebaseConfig = {
+      apiKey: "AIzaSyBo1Ezg6tzCDDCGpBNWmJfCLe8hUsmLYi4",
+      authDomain: "dreamyo-e42bb.firebaseapp.com",
+      projectId: "dreamyo-e42bb",
+      storageBucket: "dreamyo-e42bb.firebasestorage.app",
+      messagingSenderId: "266927967076",
+      appId: "1:266927967076:web:e5aca8599bc776b0774871",
+      measurementId: "G-F6MPL89R9D"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // (선택) 익명 로그인: Rules에 auth 조건 걸어뒀을 때 대비
+    const auth = getAuth(app);
+    try { await signInAnonymously(auth); } catch (e) { /* 익명로그인 막혀도 일단 진행 */ }
+
+    // ✅ AI Logic
+    const ai = getAI(app);
+    // 모델은 콘솔에서 허용된 걸로. (안 되면 "gemini-1.5-flash"로 바꿔봐)
+    const model = getGenerativeModel(ai, { model: "gemini-1.5-flash" });
+
+    // ---------- DOM ----------
     const chatBody = document.getElementById("chat-body");
     const chatForm = document.getElementById("chat-form");
     const chatInput = document.getElementById("chat-input");
 
-    let actionsShown = false;        // 기부하기/종료하기 버튼 생성 여부
-    let selectedItem = null;         // 선택된 상품 객체
-    let selectedAmount = 0;          // 선택된 상품 가격(P)
-    let products = [];               // Firestore에서 가져온 전체 상품
+    // ---------- 상태 ----------
+    let actionsShown = false;
+    let selectedItem = null;
+    let menus = [];
 
-    // ---------- 0. Firestore에서 products 한 번만 가져오기 ----------
-    db.collection("products")
-      .get()
-      .then((snapshot) => {
-        products = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("상품 목록 로딩 완료:", products);
-      })
-      .catch((err) => {
-        console.error("상품 불러오기 오류:", err);
-      });
-
-    // ---------- 공통: 말풍선/카드 UI ----------
+    // ---------- UI helpers ----------
     function addBubble(text, type) {
       const row = document.createElement("div");
       row.className = "chat-row " + type;
 
       const bubble = document.createElement("div");
       bubble.className = "chat-bubble";
-      bubble.innerHTML = text.replace(/\n/g, "<br />");
+      bubble.innerHTML = String(text).replace(/\n/g, "<br />");
 
       row.appendChild(bubble);
       chatBody.appendChild(row);
-
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    function addCardBubble(text) {
+    function addCardBubble(htmlText) {
       const row = document.createElement("div");
       row.className = "chat-row bot";
 
       const bubble = document.createElement("div");
       bubble.className = "chat-bubble chat-bubble-card";
-      bubble.innerHTML = text.replace(/\n/g, "<br />");
+      bubble.innerHTML = String(htmlText);
 
       row.appendChild(bubble);
       chatBody.appendChild(row);
-
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // ---------- 1. 추천용 텍스트 & 상품 리스트 만들기 ----------
-    function getRecommendedItems(point) {
-      if (!products.length) return [];
+    function clearOptionsAndActions() {
+      document.querySelector(".chat-options")?.remove();
+      document.querySelector(".chat-actions")?.remove();
+      actionsShown = false;
+      selectedItem = null;
+    }
 
-      // price <= point 인 상품만 골라서 가격 오름차순
-      const candidates = products
-        .filter(
-          (p) => typeof p.price === "number" && p.price <= point
-        )
-        .sort((a, b) => a.price - b.price);
+    // ---------- Firestore 로딩 (최대한 “네 구조”를 찾아서 가져오기) ----------
+    async function loadMenusFlexible() {
+      // 1) 최상위 컬렉션 menus (권장 구조)
+      try {
+        const s1 = await getDocs(query(collection(db, "menus"), limit(200)));
+        if (!s1.empty) return s1.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {}
 
-      // 상위 3개만 추천
+      // 2) new_products/menus (collection -> doc -> collection 구조일 수도 있어 실패 가능, 그래서 다음으로)
+      // 3) collectionGroup("menus") : 어떤 경로든 menus라는 서브컬렉션을 전부 가져옴
+      try {
+        const s3 = await getDocs(query(collectionGroup(db, "menus"), limit(200)));
+        if (!s3.empty) return s3.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {}
+
+      // 4) 혹시 이전 구조 products (구버전)
+      try {
+        const s4 = await getDocs(query(collection(db, "products"), limit(200)));
+        if (!s4.empty) return s4.docs.map(d => ({ id: d.id, ...d.data() }));
+      } catch (e) {}
+
+      return [];
+    }
+
+    function toBool(v) {
+      if (v === true) return true;
+      if (v === false) return false;
+      if (typeof v === "string") return v.toLowerCase() === "true";
+      return false;
+    }
+
+    function toNum(v) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    // ---------- 추천(계산은 JS가 함) ----------
+    function getRecommendedMenus(point) {
+      const candidates = menus
+        .map(m => {
+          const price = toNum(m.price ?? m.priceMileage);
+          const available = toBool(m.available);
+          return { ...m, price, available };
+        })
+        .filter(m => m.available === true && m.price !== null && m.price <= point)
+        .sort((a, b) => (a.price - b.price));
+
       return candidates.slice(0, 3);
     }
 
-    function makeRecommendationText(point, items) {
+    // ---------- Gemini: 말(이유/후속질문)만 생성 ----------
+    async function getAIText(point, items) {
       if (!items.length) {
-        return (
-          `현재 <b>${point.toLocaleString()}포인트</b>로는 등록된 기부 상품이 없어요 😢<br>` +
-          `조금 더 포인트를 모으거나, 금액을 다시 입력해 볼까요?`
-        );
+        return {
+          intro: `현재 ${point.toLocaleString()}P로는 추천 가능한 메뉴가 없어요 😢`,
+          reasons: [],
+          followUp: "포인트를 조금 더 모으거나, 다른 카테고리로 찾아볼까요?"
+        };
       }
 
-      const listHtml = items
-        .map((item, idx) => {
-          const category = item.category || "기부";
-          const priceText = item.price
-            ? item.price.toLocaleString() + "P"
-            : "";
-          return `${idx + 1}. [${category}] ${item.name} (${priceText})`;
-        })
-        .join("<br>");
+      const system = `
+너는 '드림요 추천해드리밍' 한국어 챗봇이다.
 
-      return (
-        `현재 <b>${point.toLocaleString()}포인트</b>로 기부 가능한 품목이에요.<br><br>` +
-        listHtml +
-        `<br><br>원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
-      );
+엄격한 규칙:
+1) 계산/판단(필터링/정렬/가격 비교)은 하지 않는다. 이미 추천된 items만 설명한다.
+2) 첫 문장에 사용자의 보유 포인트를 반드시 언급한다.
+3) 각 추천 항목마다 1~2문장으로 '따뜻하고 짧은' 추천 이유를 쓴다.
+4) 마지막에 사용자의 선호를 묻는 질문을 딱 1개만 한다.
+5) 결과는 반드시 JSON만 출력한다. 다른 텍스트 금지.
+
+출력 JSON 스키마:
+{
+  "intro": string,
+  "reasons": [{"id": string, "reason": string}],
+  "followUp": string
+}
+`.trim();
+
+      const payload = {
+        point,
+        items: items.map(it => ({
+          id: it.id,
+          name: it.name,
+          category: it.category ?? "cafe",
+          price: it.price
+        }))
+      };
+
+      const res = await model.generateContent([
+        { text: system },
+        { text: JSON.stringify(payload) }
+      ]);
+
+      const raw = res.response.text()
+        .replace(/```json|```/g, "")
+        .trim();
+
+      return JSON.parse(raw);
     }
 
-    // ---------- 2. 품목 선택 버튼들 (Firestore 데이터 기반) ----------
+    // ---------- 옵션 버튼 (기부할 메뉴 선택) ----------
     function showOptions(items) {
-      const old = document.querySelector(".chat-options");
-      if (old) old.remove();
-
-      if (!items || !items.length) return;
+      document.querySelector(".chat-options")?.remove();
+      if (!items.length) return;
 
       const options = document.createElement("div");
       options.className = "chat-options";
@@ -168,19 +245,15 @@
 
         const price = document.createElement("div");
         price.className = "chat-option-price";
-        price.textContent = item.price.toLocaleString() + "P";
+        price.textContent = `${item.price.toLocaleString()}P`;
 
         btn.appendChild(title);
         btn.appendChild(price);
 
         btn.onclick = () => {
-          document
-            .querySelectorAll(".chat-option-button")
-            .forEach((el) => el.classList.remove("selected"));
-
+          document.querySelectorAll(".chat-option-button").forEach(el => el.classList.remove("selected"));
           btn.classList.add("selected");
           selectedItem = item;
-          selectedAmount = item.price;
         };
 
         options.appendChild(btn);
@@ -190,7 +263,7 @@
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // ---------- 3. 기부하기 / 종료하기 버튼 ----------
+    // ---------- 액션 버튼 ----------
     function showActions() {
       if (actionsShown) return;
       actionsShown = true;
@@ -201,21 +274,14 @@
       const donateBtn = document.createElement("button");
       donateBtn.className = "chat-action-button";
       donateBtn.textContent = "기부하기";
-
       donateBtn.onclick = () => {
         if (!selectedItem) {
           alert("먼저 기부할 품목을 하나 선택해 주세요!");
           return;
         }
 
-        localStorage.setItem(
-          "donationItem",
-          `[${selectedItem.category || "기부"}] ${selectedItem.name}`
-        );
-        localStorage.setItem(
-          "donationAmount",
-          String(selectedItem.price || 0)
-        );
+        localStorage.setItem("donationItem", `[${selectedItem.category || "기부"}] ${selectedItem.name}`);
+        localStorage.setItem("donationAmount", String(selectedItem.price || 0));
         localStorage.setItem("donationItemId", selectedItem.id || "");
 
         window.location.href = "payment.html";
@@ -224,19 +290,27 @@
       const endBtn = document.createElement("button");
       endBtn.className = "chat-action-button chat-action-sub";
       endBtn.textContent = "종료하기";
-      endBtn.onclick = () => {
-        window.location.href = "home.html";
-      };
+      endBtn.onclick = () => window.location.href = "home.html";
 
       actions.appendChild(donateBtn);
       actions.appendChild(endBtn);
-
       chatBody.appendChild(actions);
       chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    // ---------- 4. 채팅 입력 처리 ----------
-    chatForm.addEventListener("submit", function (e) {
+    // ---------- 초기 로딩 ----------
+    addBubble("메뉴 데이터를 불러오는 중이에요…", "bot");
+    menus = await loadMenusFlexible();
+
+    // 데이터가 없으면 안내
+    if (!menus.length) {
+      addBubble("Firestore에서 menus 데이터를 못 찾았어 😢 (menus / collectionGroup(menus) / products를 확인해줘!)", "bot");
+    } else {
+      addBubble(`메뉴 ${menus.length}개 로딩 완료! 포인트를 입력해줘 😊`, "bot");
+    }
+
+    // ---------- 입력 처리 ----------
+    chatForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const text = chatInput.value.trim();
       if (!text) return;
@@ -244,281 +318,60 @@
       addBubble(text, "user");
       chatInput.value = "";
 
-      if (!products.length) {
-        setTimeout(() => {
-          addBubble(
-            "잠시만요! 아직 기부 상품 목록을 불러오는 중이에요. 다시 한 번만 입력해 주세요 😊",
-            "bot"
-          );
-        }, 500);
+      if (!menus.length) {
+        addBubble("아직 메뉴 데이터가 없어서 추천을 못해요. Firestore에 menus 데이터를 확인해줘!", "bot");
         return;
       }
 
       const num = text.match(/\d+/g);
       if (!num) {
-        setTimeout(() => {
-          addBubble(
-            "보유 마일리지를 숫자로 입력해 주면, 기부 가능한 품목을 추천해드릴게요! 예: 5000",
-            "bot"
-          );
-        }, 500);
+        addBubble("숫자로 포인트를 입력해줘! 예: 5000", "bot");
         return;
       }
 
       const point = parseInt(num[0], 10);
-      const items = getRecommendedItems(point);
+      clearOptionsAndActions();
 
-      setTimeout(() => {
-       const aiReply = await getAIRecommendation(point, items);
-addCardBubble(aiReply.text);
+      const items = getRecommendedMenus(point);
 
-        showOptions(items);
-        showActions();
-      }, 600);
-    });
-  </script>
-</body>
-</html>
-
-
-  <script>
-    const chatBody = document.getElementById("chat-body");
-    const chatForm = document.getElementById("chat-form");
-    const chatInput = document.getElementById("chat-input");
-
-    let actionsShown = false;        // 기부하기/종료하기 버튼 생성 여부
-    let selectedItem = null;         // 선택된 상품 객체
-    let selectedAmount = 0;          // 선택된 상품 가격(P)
-    let products = [];               // Firestore에서 가져온 전체 상품
-    let lastRecommended = [];        // 마지막 추천 리스트
-
-    // ---------- 0. Firestore에서 products 한 번만 가져오기 ----------
-    db.collection("products")
-      .get()
-      .then((snapshot) => {
-        products = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        console.log("상품 목록 로딩 완료:", products);
-      })
-      .catch((err) => {
-        console.error("상품 불러오기 오류:", err);
-      });
-
-    // ---------- 공통: 말풍선/카드 UI ----------
-    function addBubble(text, type) {
-      const row = document.createElement("div");
-      row.className = "chat-row " + type;
-
-      const bubble = document.createElement("div");
-      bubble.className = "chat-bubble";
-      bubble.innerHTML = text.replace(/\n/g, "<br />");
-
-      row.appendChild(bubble);
-      chatBody.appendChild(row);
-
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    function addCardBubble(text) {
-      const row = document.createElement("div");
-      row.className = "chat-row bot";
-
-      const bubble = document.createElement("div");
-      bubble.className = "chat-bubble chat-bubble-card";
-      bubble.innerHTML = text.replace(/\n/g, "<br />");
-
-      row.appendChild(bubble);
-      chatBody.appendChild(row);
-
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    // ---------- 1. 추천용 텍스트 & 상품 리스트 만들기 ----------
-
-    function getRecommendedItems(point) {
-      if (!products.length) return [];
-
-      // price <= point 인 상품만 골라서 가격 오름차순
-      const candidates = products
-        .filter(
-          (p) => typeof p.price === "number" && p.price <= point
-        )
-        .sort((a, b) => a.price - b.price);
-
-      // 상위 3개만 추천
-      return candidates.slice(0, 3);
-    }
-
-    function makeRecommendationText(point, items) {
+      // 먼저 기본 카드(빠르게)
       if (!items.length) {
-        return (
-          `현재 <b>${point.toLocaleString()}포인트</b>로는 등록된 기부 상품이 없어요 😢<br>` +
-          `조금 더 포인트를 모으거나, 금액을 다시 입력해 볼까요?`
-        );
+        addCardBubble(`현재 <b>${point.toLocaleString()}P</b>로는 추천 가능한 품목이 없어요 😢<br>포인트를 더 모아보거나 다시 입력해볼까요?`);
+        return;
       }
 
-      const listHtml = items
-        .map((item, idx) => {
-          const category = item.category || "기부";
-          const priceText = item.price
-            ? item.price.toLocaleString() + "P"
-            : "";
-          return `${idx + 1}. [${category}] ${item.name} (${priceText})`;
-        })
-        .join("<br>");
+      // AI 생성
+      addBubble("잠깐만요! AI가 추천 이유를 만들고 있어요… 🤖", "bot");
 
-      return (
-        `현재 <b>${point.toLocaleString()}포인트</b>로 기부 가능한 품목이에요.<br><br>` +
-        listHtml +
-        `<br><br>원하는 품목을 골라 아이들에게 따뜻한 응원을 전해볼까요? 😊`
-      );
-    }
-
-    // ---------- 2. 품목 선택 버튼들 보여주기 (Firestore 데이터 기반) ----------
-
-    function showOptions(items) {
-      // 이전 옵션이 있으면 제거
-      const old = document.querySelector(".chat-options");
-      if (old) old.remove();
-
-      if (!items || !items.length) return;
-
-      const options = document.createElement("div");
-      options.className = "chat-options";
-
-      items.forEach((item) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "chat-option-button";
-
-        const title = document.createElement("div");
-        title.className = "chat-option-title";
-        title.textContent = `[${item.category || "기부"}] ${item.name}`;
-
-        const price = document.createElement("div");
-        price.className = "chat-option-price";
-        price.textContent = item.price.toLocaleString() + "P";
-
-        btn.appendChild(title);
-        btn.appendChild(price);
-
-        btn.onclick = () => {
-          // 모두 선택 해제
-          document
-            .querySelectorAll(".chat-option-button")
-            .forEach((el) => el.classList.remove("selected"));
-
-          // 이 버튼만 선택 표시
-          btn.classList.add("selected");
-
-          selectedItem = item;
-          selectedAmount = item.price;
+      let aiText;
+      try {
+        aiText = await getAIText(point, items);
+      } catch (err) {
+        console.error(err);
+        aiText = {
+          intro: `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`,
+          reasons: items.map(it => ({ id: it.id, reason: "포인트 조건에 맞고 많은 분들이 선택하는 메뉴예요!" })),
+          followUp: "음료/간식 중 어떤 쪽을 더 선호해?"
         };
-
-        options.appendChild(btn);
-      });
-
-      chatBody.appendChild(options);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    // ---------- 3. 기부하기 / 종료하기 버튼 영역 ----------
-
-    function showActions() {
-      if (actionsShown) return;
-      actionsShown = true;
-
-      const actions = document.createElement("div");
-      actions.className = "chat-actions";
-
-      const donateBtn = document.createElement("button");
-      donateBtn.className = "chat-action-button";
-      donateBtn.textContent = "기부하기";
-
-      donateBtn.onclick = () => {
-        if (!selectedItem) {
-          alert("먼저 기부할 품목을 하나 선택해 주세요!");
-          return;
-        }
-
-        // 결제 화면에서 사용할 정보 저장
-        localStorage.setItem(
-          "donationItem",
-          `[${selectedItem.category || "기부"}] ${selectedItem.name}`
-        );
-        localStorage.setItem(
-          "donationAmount",
-          String(selectedItem.price || 0)
-        );
-        // 필요하다면 id도 넘길 수 있음
-        localStorage.setItem("donationItemId", selectedItem.id || "");
-
-        window.location.href = "payment.html";
-      };
-
-      const endBtn = document.createElement("button");
-      endBtn.className = "chat-action-button chat-action-sub";
-      endBtn.textContent = "종료하기";
-      endBtn.onclick = () => {
-        window.location.href = "home.html";
-      };
-
-      actions.appendChild(donateBtn);
-      actions.appendChild(endBtn);
-
-      chatBody.appendChild(actions);
-      chatBody.scrollTop = chatBody.scrollHeight;
-    }
-
-    // ---------- 4. 채팅 입력 처리 ----------
-
-    chatForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const text = chatInput.value.trim();
-      if (!text) return;
-
-      // 사용자 말풍선 추가
-      addBubble(text, "user");
-      chatInput.value = "";
-
-      // Firestore 데이터 아직 안 온 경우
-      if (!products.length) {
-        setTimeout(() => {
-          addBubble(
-            "잠시만요! 아직 기부 상품 목록을 불러오는 중이에요. 다시 한 번만 입력해 주세요 😊",
-            "bot"
-          );
-        }, 500);
-        return;
       }
 
-      // 숫자(포인트) 추출
-      const num = text.match(/\d+/g);
-      if (!num) {
-        setTimeout(() => {
-          addBubble(
-            "보유 마일리지를 숫자로 입력해 주면, 기부 가능한 품목을 추천해드릴게요! 예: 5000",
-            "bot"
-          );
-        }, 500);
-        return;
-      }
+      const reasonMap = new Map((aiText.reasons || []).map(r => [r.id, r.reason]));
+      const listHtml = items.map((it, idx) => {
+        const reason = reasonMap.get(it.id) || "포인트 조건에 맞는 메뉴라 추천해요!";
+        return `${idx + 1}. <b>${it.name}</b> (${it.price.toLocaleString()}P)<br><span style="opacity:.9">${reason}</span>`;
+      }).join("<br><br>");
 
-      const point = parseInt(num[0], 10);
+      const card = `
+        <b>${aiText.intro || `현재 ${point.toLocaleString()}P로 가능한 추천이에요!`}</b><br><br>
+        ${listHtml}<br><br>
+        <b>Q.</b> ${aiText.followUp || "어떤 종류를 더 원해? (예: 커피/디저트/편의점)"}
+      `;
 
-      // 추천 계산
-      const items = getRecommendedItems(point);
-      lastRecommended = items;
-
-      setTimeout(() => {
-        const reply = makeRecommendationText(point, items);
-        addCardBubble(reply);   // 카드형 말풍선
-        showOptions(items);     // Firestore 기반 품목 선택 버튼들
-        showActions();          // 기부하기/종료하기 버튼
-      }, 600);
+      addCardBubble(card);
+      showOptions(items);
+      showActions();
     });
+
   </script>
 </body>
 </html>
