@@ -161,15 +161,53 @@
 
     <!-- 하단 탭바 -->
     <nav class="tabbar">
-      <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
-      <a href="#" class="tab-item" aria-label="기록">◴</a>
-      <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
-      <a href="#" class="tab-item" aria-label="뉴스">📖</a>
-      <a href="#" class="tab-item" aria-label="마이">👤</a>
-      <div class="home-indicator" aria-hidden="true"></div>
-    </nav>
+  <a href="home.html" class="tab-item active" aria-label="홈">
+    <!-- Home -->
+    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </svg>
+  </a>
 
-  </div>
+  <a href="#" class="tab-item" aria-label="탐색">
+    <!-- Compass -->
+    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+      <path d="M14.8 9.2l-2.2 6.1-6.1 2.2 2.2-6.1 6.1-2.2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </svg>
+  </a>
+
+  <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">
+    <!-- Heart -->
+    <svg class="tab-ico tab-ico-heart" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 20s-7-4.6-9.3-8.6C1 8.3 3.1 5.8 6 6c1.6.1 2.7 1 3.4 2 0 0 .9-1.9 3.6-2 2.9-.2 5 2.3 3.3 5.4C19 15.4 12 20 12 20z"
+            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+    </svg>
+  </button>
+
+  <a href="#" class="tab-item" aria-label="뉴스">
+    <!-- Book -->
+    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 5.5C4 4.7 4.7 4 5.5 4H11c1.7 0 3 1.3 3 3v14c0-1.7-1.3-3-3-3H5.5C4.7 18 4 17.3 4 16.5v-11z"
+            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M20 5.5C20 4.7 19.3 4 18.5 4H13"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M20 16.5c0 .8-.7 1.5-1.5 1.5H13"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+
+  <a href="#" class="tab-item" aria-label="마이">
+    <!-- User -->
+    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/>
+      <path d="M5 20c1.8-3.2 4.6-5 7-5s5.2 1.8 7 5"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </a>
+
+  <div class="home-indicator" aria-hidden="true"></div>
+</nav>
+
 
   <!-- ✅ 스크립트는 body 맨 아래 -->
   <script src="./pwa.js"></script>
