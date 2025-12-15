@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-
   <title>Dreamyo - 홈</title>
+
   <link rel="stylesheet" href="style.css" />
 
-  <!-- ✅ PWA -->
+  <!-- ✅ PWA (home.html이 dreamyoapp 폴더 안에 있으니까 상대경로가 안정적) -->
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#4E62E3" />
 
-  <!-- ✅ iOS 홈화면 추가 -->
+  <!-- ✅ iOS 홈화면 추가용 -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Dreamyo" />
   <link rel="apple-touch-icon" href="./logo.png" />
 </head>
@@ -90,9 +90,35 @@
         </div>
       </section>
 
-  
+      <!-- 섹션 3: 따뜻한 뉴스 -->
+      <section class="home-section">
+        <div class="section-header">
+          <h2 class="section-title">따뜻한 뉴스</h2>
+          <button class="section-arrow">›</button>
+        </div>
 
-      <!-- 섹션 3: 우리들의 커뮤니티 -->
+        <div class="horizontal-scroll">
+          <article class="news-card">
+            <div class="news-thumb">사진</div>
+            <div class="news-meta">2025.11.26</div>
+            <div class="news-title">결제하면서 직접 기부한 CU, 착한 100일 기...</div>
+          </article>
+
+          <article class="news-card">
+            <div class="news-thumb">사진</div>
+            <div class="news-meta">2025.11.25</div>
+            <div class="news-title">온성의료재단, 초록우산 어린이재단에 1,000만...</div>
+          </article>
+
+          <article class="news-card">
+            <div class="news-thumb">사진</div>
+            <div class="news-meta">2025.11.20</div>
+            <div class="news-title">LG화학 임직원, 결식아동 도시락 2만개 후원...</div>
+          </article>
+        </div>
+      </section>
+
+      <!-- 섹션 4: 우리들의 커뮤니티 -->
       <section class="home-section">
         <div class="section-header">
           <h2 class="section-title">우리들의 커뮤니티</h2>
@@ -117,7 +143,7 @@
         </div>
       </section>
 
-      <!-- 섹션 4: 추천 챗봇 -->
+      <!-- 섹션 5: 추천 챗봇 -->
       <section class="home-section">
         <button class="row-link" onclick="location.href='recommend.html'">
           <div class="row-link-main">
@@ -128,7 +154,7 @@
         </button>
       </section>
 
-      <!-- 섹션 5: 챗봇에게 질문하기 -->
+      <!-- 섹션 6: 챗봇에게 질문하기 -->
       <section class="home-section">
         <button class="row-link" onclick="location.href='recommend.html'">
           <div class="row-link-main">
@@ -137,18 +163,7 @@
           </div>
           <div class="row-link-arrow">›</div>
         </button>
-      </section
-        <!-- 섹션 6: 응원하기 -->
-<section class="home-section">
-  <button class="row-link" onclick="location.href='support.html'">
-    <div class="row-link-main">
-      <div class="row-link-title">응원하기</div>
-      <div class="row-link-sub">사연을 보고 마음을 전해요. 작은 응원이 큰 힘이 돼요!</div>
-    </div>
-    <div class="row-link-arrow">›</div>
-  </button>
-</section>
-
+      </section>
 
       <!-- 푸터 -->
       <footer class="home-footer">
@@ -161,53 +176,15 @@
 
     <!-- 하단 탭바 -->
     <nav class="tabbar">
-  <a href="home.html" class="tab-item active" aria-label="홈">
-    <!-- Home -->
-    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V10.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-    </svg>
-  </a>
+      <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
+      <a href="#" class="tab-item" aria-label="기록">◴</a>
+      <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
+      <a href="#" class="tab-item" aria-label="뉴스">📖</a>
+      <a href="#" class="tab-item" aria-label="마이">👤</a>
+      <div class="home-indicator" aria-hidden="true"></div>
+    </nav>
 
-  <a href="#" class="tab-item" aria-label="탐색">
-    <!-- Compass -->
-    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-      <path d="M14.8 9.2l-2.2 6.1-6.1 2.2 2.2-6.1 6.1-2.2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-    </svg>
-  </a>
-
-  <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">
-    <!-- Heart -->
-    <svg class="tab-ico tab-ico-heart" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 20s-7-4.6-9.3-8.6C1 8.3 3.1 5.8 6 6c1.6.1 2.7 1 3.4 2 0 0 .9-1.9 3.6-2 2.9-.2 5 2.3 3.3 5.4C19 15.4 12 20 12 20z"
-            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-    </svg>
-  </button>
-
-  <a href="#" class="tab-item" aria-label="뉴스">
-    <!-- Book -->
-    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M4 5.5C4 4.7 4.7 4 5.5 4H11c1.7 0 3 1.3 3 3v14c0-1.7-1.3-3-3-3H5.5C4.7 18 4 17.3 4 16.5v-11z"
-            stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-      <path d="M20 5.5C20 4.7 19.3 4 18.5 4H13"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      <path d="M20 16.5c0 .8-.7 1.5-1.5 1.5H13"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  </a>
-
-  <a href="#" class="tab-item" aria-label="마이">
-    <!-- User -->
-    <svg class="tab-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="2"/>
-      <path d="M5 20c1.8-3.2 4.6-5 7-5s5.2 1.8 7 5"
-            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-    </svg>
-  </a>
-
-  <div class="home-indicator" aria-hidden="true"></div>
-</nav>
-
+  </div>
 
   <!-- ✅ 스크립트는 body 맨 아래 -->
   <script src="./pwa.js"></script>
