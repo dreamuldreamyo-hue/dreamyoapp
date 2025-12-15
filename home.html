@@ -7,7 +7,7 @@
 
   <link rel="stylesheet" href="style.css" />
 
-  <!-- ✅ PWA (home.html이 dreamyoapp 폴더 안에 있으니까 상대경로가 안정적) -->
+  <!-- ✅ PWA -->
   <link rel="manifest" href="./manifest.json" />
   <meta name="theme-color" content="#4E62E3" />
 
@@ -173,22 +173,20 @@
       </footer>
 
     </main>
-
-    <!-- 하단 탭바 -->
-    <nav class="tabbar">
-      <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
-      <a href="#" class="tab-item" aria-label="기록">◴</a>
-      <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
-      <a href="#" class="tab-item" aria-label="뉴스">📖</a>
-      <a href="#" class="tab-item" aria-label="마이">👤</a>
-      <div class="home-indicator" aria-hidden="true"></div>
-    </nav>
-
   </div>
+
+  <!-- ✅ 탭바는 screen 밖으로 빼기 (핵심) -->
+  <nav class="tabbar">
+    <a href="home.html" class="tab-item active" aria-label="홈">⌂</a>
+    <a href="#" class="tab-item" aria-label="기록">◴</a>
+    <button class="tab-center" id="go-qr" type="button" aria-label="QR결제">♡</button>
+    <a href="#" class="tab-item" aria-label="뉴스">📖</a>
+    <a href="#" class="tab-item" aria-label="마이">👤</a>
+    <div class="home-indicator" aria-hidden="true"></div>
+  </nav>
 
   <!-- ✅ 스크립트는 body 맨 아래 -->
   <script src="./pwa.js"></script>
-
   <script>
     document.getElementById("go-qr").addEventListener("click", () => {
       const amount = parseInt(localStorage.getItem("pay_amount") || "6500", 10) || 6500;
@@ -199,4 +197,5 @@
   </script>
 </body>
 </html>
+
 
