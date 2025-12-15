@@ -916,27 +916,7 @@ body {
   object-fit: cover;      /* 박스에 꽉 채우되 비율 유지 (넘치는 부분은 잘림) */
   display: block;
 }
-/* ===== Tab Bar (iOS style) ===== */
-/* ===== Tabbar: screen 가운데 정렬 고정 ===== */
-.tabbar{
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 0;
 
-  /* ✅ 앱 프레임 폭에 맞추기 (너희 screen max-width랑 맞춰) */
-  width: min(100vw, 420px);
-
-  height: 72px;
-  background: #f2f2f2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0px));
-  box-sizing: border-box;
-  z-index: 999;
-}
 
 
 /* 각 탭 아이템(회색 아이콘 느낌) */
