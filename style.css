@@ -1,6 +1,4 @@
-/* =========================
-   RESET & BASE
-   ========================= */
+/* 전체 기본 설정 */ 
 * {
   box-sizing: border-box;
 }
@@ -11,21 +9,21 @@ body {
   background: #f5f5f7;
   display: flex;
   justify-content: center;
+  align-items: center;
   min-height: 100vh;
 }
 
-/* =========================
-   SCREEN FRAME
-   ========================= */
+/* 공통 화면 틀 (모바일에 딱 맞게 + PC에서는 아이폰 프레임처럼) */
 .screen {
   width: 100%;
   min-height: 100vh;
   background: #ffffff;
   position: relative;
-  padding: 72px 24px 32px;
-  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 72px 24px 32px; /* 위에 상태바 여백 포함 */
 }
 
+/* PC/태블릿에서는 아이폰 프레임 느낌 유지 */
 @media (min-width: 480px) {
   .screen {
     max-width: 375px;
@@ -36,24 +34,112 @@ body {
   }
 }
 
-/* =========================
-   LOGO
-   ========================= */
-.logo-img {
+
+/* 로고 텍스트 */
+.logo {
+  font-size: 40px;
+  font-weight: 800;
+  color: #3e63ff;
+  margin-bottom: 8px;
+}
+
+/* 상단 설명 텍스트 */
+.subtitle {
+  font-size: 16px;
+  color: #666666;
+  margin-bottom: 32px;
+}
+
+/* 가운데 정렬 전용 */
+.center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* 인풋 그룹 */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  font-size: 13px;
+  color: #444444;
+  margin-bottom: 4px;
   display: block;
 }
 
-.logo-img.home {
-  width: 58px;
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
 }
 
-/* =========================
-   HOME
-   ========================= */
+/* 버튼 */
+.btn-primary {
+  width: 100%;
+  padding: 14px 0;
+  border-radius: 12px;
+  border: none;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+/* 아래쪽 작은 텍스트 */
+.text-small {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #666666;
+  text-align: center;
+}
+
+.text-link {
+  color: #3e63ff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* 뒤로가기 화살표 */
+.back {
+  position: absolute;
+  left: 16px;
+  top: 40px;
+  font-size: 20px;
+  text-decoration: none;
+  color: #333333;
+}
+
+/* -------------------------------- */
+/* .screen 이 스크롤 되도록 */
+/* -------------------------------- */
+.screen {
+  overflow-y: auto;
+}
+
+/* ========================= */
+/* 홈 화면 */
+/* ========================= */
+
 .screen-home {
-  padding-bottom: 110px;
+  padding-bottom: 80px; /* 탭바 공간 확보 */
 }
 
+.home-main {
+  padding-bottom: 16px;
+}
+
+/* 상단 헤더 */
 .home-header {
   margin-bottom: 24px;
 }
@@ -65,6 +151,13 @@ body {
   margin-bottom: 16px;
 }
 
+.logo-mark {
+  font-size: 24px;
+  font-weight: 800;
+  color: #3e63ff;
+}
+
+/* 금액 정보 */
 .home-balance-label {
   font-size: 13px;
   color: #6b7280;
@@ -73,13 +166,14 @@ body {
 
 .home-balance-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
 }
 
 .home-balance-amount {
   font-size: 24px;
   font-weight: 800;
+  color: #111827;
 }
 
 .home-badge-button {
@@ -89,79 +183,80 @@ body {
   font-size: 12px;
   background: #e5edff;
   color: #3e63ff;
+  cursor: pointer;
 }
 
-/* =========================
-   SECTION
-   ========================= */
+/* 공통 섹션 스타일 */
 .home-section {
   margin-bottom: 20px;
 }
 
 .section-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 8px;
 }
 
 .section-title {
   font-size: 14px;
   font-weight: 600;
+  color: #111827;
+  margin: 0;
 }
 
 .section-arrow {
-  background: none;
   border: none;
+  background: none;
   font-size: 18px;
+  cursor: pointer;
   color: #9ca3af;
 }
 
-/* =========================
-   HORIZONTAL SCROLL
-   ========================= */
+/* 가로 스크롤 컨테이너 */
 .horizontal-scroll {
   display: flex;
   gap: 12px;
   overflow-x: auto;
+  padding-bottom: 4px;
 }
 
-/* =========================
-   MENU CARD
-   ========================= */
+/* 최근 사주세요 카드 */
 .menu-card {
   min-width: 120px;
-  border: 1px solid #e5e7eb;
+  max-width: 120px;
   border-radius: 16px;
+  border: 1px solid #e5e7eb;
   padding: 8px;
+  background: #ffffff;
 }
 
 .menu-thumb {
   width: 100%;
   height: 80px;
-  background: #e5e7eb;
   border-radius: 12px;
-  overflow: hidden;
-}
-
-.menu-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background: #e5e7eb;
+  font-size: 12px;
+  color: #9ca3af;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 6px;
 }
 
 .menu-name {
   font-size: 12px;
+  color: #111827;
+  margin-bottom: 2px;
 }
 
 .menu-price {
   font-size: 12px;
   font-weight: 600;
+  color: #111827;
 }
 
-/* =========================
-   MAP
-   ========================= */
+/* 지도 카드 */
 .map-card {
   border-radius: 16px;
   border: 1px solid #e5e7eb;
@@ -170,52 +265,51 @@ body {
 
 .map-thumb {
   width: 100%;
-  height: 160px;
-  border-radius: 18px;
-  overflow: hidden;
+  height: 120px;
+  border-radius: 12px;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #9ca3af;
 }
 
-.map-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* =========================
-   NEWS
-   ========================= */
+/* 뉴스 카드 */
 .news-card {
   min-width: 180px;
-  border: 1px solid #e5e7eb;
+  max-width: 180px;
   border-radius: 16px;
+  border: 1px solid #e5e7eb;
   padding: 8px;
+  background: #ffffff;
 }
 
 .news-thumb {
   width: 100%;
-  height: 110px;
+  height: 80px;
   border-radius: 12px;
-  overflow: hidden;
-}
-
-.news-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  background: #e5e7eb;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #9ca3af;
 }
 
 .news-meta {
   font-size: 11px;
   color: #6b7280;
+  margin-bottom: 2px;
 }
 
 .news-title {
   font-size: 12px;
+  color: #111827;
 }
 
-/* =========================
-   COMMUNITY
-   ========================= */
+/* 커뮤니티 리스트 */
 .community-list {
   display: flex;
   flex-direction: column;
@@ -223,14 +317,16 @@ body {
 }
 
 .community-item {
-  padding: 10px;
+  padding: 10px 8px;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
+  background: #ffffff;
 }
 
 .community-tag {
   font-size: 11px;
   color: #3e63ff;
+  margin-bottom: 4px;
 }
 
 .community-text {
@@ -238,9 +334,7 @@ body {
   color: #4b5563;
 }
 
-/* =========================
-   ROW LINK
-   ========================= */
+/* 한 줄 링크 섹션 (추천 챗봇, 챗봇 질문 등) */
 .row-link {
   width: 100%;
   border-radius: 12px;
@@ -248,13 +342,20 @@ body {
   background: #ffffff;
   padding: 10px 12px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.row-link-main {
+  text-align: left;
 }
 
 .row-link-title {
   font-size: 13px;
   font-weight: 600;
+  color: #111827;
+  margin-bottom: 2px;
 }
 
 .row-link-sub {
@@ -262,77 +363,795 @@ body {
   color: #6b7280;
 }
 
-/* =========================
-   FOOTER
-   ========================= */
+.row-link-arrow {
+  font-size: 18px;
+  color: #9ca3af;
+}
+
+/* 푸터 */
 .home-footer {
   margin-top: 16px;
-  padding-top: 12px;
+  padding: 8px 0 70px; /* 탭바 위 여백 */
   border-top: 1px solid #e5e7eb;
 }
 
 .home-footer p {
+  margin: 2px 0;
   font-size: 11px;
   color: #9ca3af;
 }
 
-/* =========================
-   TAB BAR (FINAL)
-   ========================= */
-.tabbar {
+.footer-links {
+  margin-top: 4px;
+}
+
+
+
+.tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.tab-item span {
+  font-size: 18px;
+}
+
+.tab-item.active {
+  color: #3e63ff;
+}
+
+/* ========================= */
+/* 추천해드리밍 챗봇 화면 */
+/* ========================= */
+
+.chat-screen {
+  padding-top: 56px;      /* 헤더 높이만큼 여백 */
+  padding-bottom: 72px;   /* 하단 입력창 여백 */
+  position: relative;
+}
+
+/* 상단 헤더 */
+.chat-header {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-header .back {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 22px;
+  text-decoration: none;
+  color: #111827;
+}
+
+/* 채팅 영역 */
+.chat-body {
+  height: calc(100% - 56px - 72px);
+  overflow-y: auto;
+  padding: 8px 4px 8px 4px;
+}
+
+/* 말풍선 줄 */
+.chat-row {
+  display: flex;
+  margin: 6px 0;
+}
+
+.chat-row.bot {
+  justify-content: flex-start;
+}
+
+.chat-row.user {
+  justify-content: flex-end;
+}
+
+/* 기본 말풍선 */
+.chat-bubble {
+  max-width: 80%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* 봇 말풍선 */
+.chat-row.bot .chat-bubble {
+  background: #f3f4f6;
+  color: #111827;
+  border-bottom-left-radius: 2px;
+}
+
+/* 사용자 말풍선 */
+.chat-row.user .chat-bubble {
+  background: #3e63ff;
+  color: #ffffff;
+  border-bottom-right-radius: 2px;
+}
+
+/* 추천 카드 느낌의 봇 말풍선 */
+.chat-bubble-card {
+  background: #f9fafb;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+}
+
+/* 말풍선 아래 버튼 두 개 */
+.chat-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0 4px;
+}
+
+.chat-action-button {
+  min-width: 120px;
+  padding: 10px 0;
+  border-radius: 18px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.chat-action-sub {
+  background: #f9fafb;
+}
+
+/* 하단 입력창 */
+.chat-input-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 12px 12px;
+  display: flex;
+  gap: 8px;
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+}
+
+.chat-input {
+  flex: 1;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  font-size: 13px;
+}
+
+.chat-send-button {
+  border-radius: 18px;
+  border: none;
+  padding: 0 16px;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ========================= */
+/* 결제 화면 (사줄게요) */
+/* ========================= */
+
+.payment-screen {
+  padding: 56px 16px 80px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 헤더 */
+.payment-header {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.payment-header .back {
+  position: absolute;
+  left: 0;
+  font-size: 22px;
+  text-decoration: none;
+  color: #111827;
+}
+
+/* 본문 */
+.payment-body {
+  margin-top: 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 공통 카드 */
+.pay-card {
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 12px 14px;
+}
+
+/* 카드 제목 */
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+/* 주문 요약 */
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.order-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.order-value {
+  font-size: 12px;
+  color: #111827;
+}
+
+.order-total {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.order-total-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+/* 마일리지 카드 */
+.mileage-card {
+  padding-top: 10px;
+  padding-bottom: 4px;
+}
+
+.mileage-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.mileage-detail-row {
+  margin-top: 6px;
+  width: 100%;
+  border: none;
+  background: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+/* 결제 수단 카드 */
+.method-card {
+  padding-bottom: 10px;
+}
+
+.pay-method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pay-method-option {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 10px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.pay-method-option .pay-method-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pay-method-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.pay-method-text {
+  text-align: left;
+}
+
+.pay-method-name {
+  font-size: 13px;
+  color: #111827;
+}
+
+.pay-method-sub {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.pay-method-check {
+  font-size: 12px;
+  color: #2563eb;
+}
+
+/* 선택된 결제 수단 */
+.pay-method-option.selected {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+/* 마일리지 사용 영역 */
+.pay-mileage-use {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 10px 10px 8px;
+  margin-top: 2px;
+}
+
+.pay-mileage-use-header {
+  margin-bottom: 4px;
+}
+
+.pay-mileage-use-body {
+  font-size: 11px;
+}
+
+.pay-mileage-input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.pay-mileage-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pay-mileage-input {
+  width: 80px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 12px;
+  text-align: right;
+}
+
+.pay-mileage-unit {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.pay-mileage-all {
+  margin-left: auto;
+  padding: 4px 8px;
+  font-size: 11px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.pay-mileage-all:hover {
+  background: #e5e7eb;
+}
+
+/* 마일리지 사용 바 */
+.pay-mileage-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.pay-mileage-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: #3b82f6;
+}
+
+/* 응원 메시지 */
+.message-card {
+  padding-bottom: 10px;
+}
+
+.message-textarea {
+  width: 100%;
+  min-height: 80px;
+  margin-top: 6px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  font-size: 12px;
+  resize: none;
+}
+
+/* 하단 결제 버튼 */
+.payment-submit-button {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  height: 46px;
+  border-radius: 999px;
+  border: none;
+  background: #3e63ff;
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.payment-submit-button:hover {
+  opacity: 0.96;
+}
+/* 품목 선택 버튼 영역 */
+.chat-options {
+  margin: 8px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chat-option-button {
+  width: 100%;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 8px 10px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.chat-option-title {
+  font-size: 13px;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.chat-option-price {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+/* 선택된 품목 강조 */
+.chat-option-button.selected {
+  border-color: #3e63ff;
+  background: #eff6ff;
+}
+/* ===== 로고 이미지 공통 ===== */
+.logo-img {
+  display: block;
+  height: auto;
+}
+
+/* 시작(로그인 전) 중앙 로고 크게 */
+.logo-img.start {
+  width: 180px;
+  margin: 0 auto;
+}
+
+/* 로그인/회원가입 중앙 로고 */
+.logo-img.auth {
+  width: 160px;
+  margin: 0 auto 8px;
+}
+
+/* 홈 왼쪽 상단 로고 작게 */
+.logo-img.home {
+  width: 58px;
+}
+/* 📱 모바일에서는 화면 꽉 차게 */
+@media (max-width: 480px) {
+  body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  .screen {
+    width: 100vw;
+    min-height: 100vh;
+    border-radius: 0;
+    box-shadow: none;
+    padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+  }
+}
+.map-thumb{
+  height: 160px;          /* 원하는 지도 박스 높이 (필요하면 140~220으로 조절) */
+  border-radius: 18px;
+  overflow: hidden;       /* 박스 밖으로 삐져나온 이미지 자르기 */
+  background: #eef1f6;
+}
+
+.map-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* 박스에 꽉 채우되 비율 유지 (넘치는 부분은 잘림) */
+  display: block;
+}
+/* ===== Tab Bar (iOS style) ===== */
+/* ===== Tabbar: screen 가운데 정렬 고정 ===== */
+.tabbar{
   position: fixed;
   left: 50%;
   transform: translateX(-50%);
   bottom: 0;
 
-  width: min(100vw, 375px);
-  height: 72px;
+  /* ✅ 앱 프레임 폭에 맞추기 (너희 screen max-width랑 맞춰) */
+  width: min(100vw, 420px);
 
+  height: 72px;
   background: #f2f2f2;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  padding: 10px 18px calc(10px + env(safe-area-inset-bottom));
+  padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
   z-index: 999;
 }
 
-.tab-item {
+
+/* 각 탭 아이템(회색 아이콘 느낌) */
+.tab-item{
   width: 44px;
   height: 44px;
+  display: grid;
+  place-items: center;
+  color: #444;
+  text-decoration: none;
+  font-size: 22px;
+  opacity: 0.9;
+}
+
+/* 활성 탭(살짝 진하게) */
+.tab-item.active{
+  opacity: 1;
+  color: #111;
+}
+
+/* 가운데 파란 원 버튼 */
+.tab-center{
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  border: 0;
+  background: #4f6cff;          /* 파란색 */
+  color: #fff;
+  font-size: 28px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 18px rgba(0,0,0,0.18);
+  transform: translateY(-18px); /* 위로 떠오르게 */
+  cursor: pointer;
+}
+
+/* 아이폰 하단 검은 줄 */
+.home-indicator{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 7px;
+  width: 140px;
+  height: 5px;
+  background: #111;
+  border-radius: 999px;
+  opacity: 0.9;
+}
+
+/* 탭바가 화면을 가리지 않게(홈 화면 본문 아래 여백) */
+.screen-home{
+  padding-bottom: 110px; /* 탭바 높이만큼 */
+}
+
+.qr-box{
+  width: 220px;
+  height: 220px;
   display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-img{
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+}
+
+/* 회색 박스 */
+.menu-thumb {
+  width: 100%;
+  height: 80px;          /* ← 지금 디자인에 맞는 높이 */
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;      /* 🔥 박스 밖으로 나간 이미지 자르기 */
+}
+
+/* 박스 안의 사진 */
+.menu-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;     /* 🔥 박스에 딱 맞게 채우기 */
+  display: block;
+}
+/* 햄버거 사진만 초점 조정 */
+.menu-thumb img.hambuger {
+  object-position: center center; /* 기본 중앙 */
+}
+
+/* ✅ 따뜻한 뉴스 썸네일 이미지가 안 보일 때(부모 높이 0 해결) */
+.news-thumb{
+  width: 100%;
+  height: 110px;          /* <- 이게 핵심 (원하는 높이로 조절 가능) */
+  background: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  display: block;
+}
+
+.news-thumb img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* =========================
+   iOS 안전영역(Safe Area) 대응
+   ========================= */
+
+/* 전체 화면 컨테이너가 노치 영역을 침범하지 않도록 */
+.screen.chat-screen {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* 상단 헤더: 상태바 높이만큼 여백을 추가 */
+.chat-header {
+  position: sticky; /* fixed보다 sticky가 안전함 */
+  top: 0;
+  z-index: 50;
+
+  /* ✅ 핵심: 상단 safe-area 만큼 패딩 추가 */
+  padding-top: calc(env(safe-area-inset-top) + 10px);
+  padding-bottom: 10px;
+
+  /* 좌우는 기존 디자인 유지 */
+  padding-left: 16px;
+  padding-right: 16px;
+
+  background: #fff; /* 헤더가 채팅 위에 올라오니 배경 필요 */
+}
+
+/* 제목/뒤로가기 수직 정렬 안정화 */
+.chat-title {
+  margin: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+/* 뒤로가기 버튼이 헤더 높이에 맞게 중앙 정렬되도록 */
+.chat-header .back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  width: 32px;
+}
+
+/* 헤더가 sticky이므로 본문이 헤더 밑으로 숨지 않게 약간 여유 */
+.chat-body {
+  padding-top: 10px;
+}
+
+/* 하단 입력창도 iOS 홈바(safe-area bottom) 피해주기 */
+.chat-input-bar {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 10px);
+  background: #fff;
+}
+/* ===== Tabbar (아이콘 통일 버전) ===== */
+.tabbar{
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 72px;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0px));
+  box-sizing: border-box;
+  z-index: 999;
+}
+
+.tab-item{
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #6b6b6b;
   text-decoration: none;
 }
 
-.tab-item.active {
+.tab-ico{
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.tab-item.active{
   color: #3f3f3f;
 }
 
-.tab-ico {
-  width: 26px;
-  height: 26px;
-}
-
-.tab-center {
+/* 중앙 하트 버튼 (네 이미지처럼 원형 강조) */
+.tab-center{
   width: 54px;
   height: 54px;
+  border: none;
   border-radius: 999px;
   background: #4E62E3;
-  border: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 18px rgba(0,0,0,.15);
 }
 
-.tab-center .tab-ico {
+.tab-center .tab-ico{
+  width: 26px;
+  height: 26px;
   color: #fff;
 }
 
-.home-indicator {
+/* 하단 인디케이터(검은 막대) */
+.home-indicator{
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -341,5 +1160,6 @@ body {
   height: 4px;
   background: #111;
   border-radius: 999px;
+  opacity: .9;
+  pointer-events: none;
 }
-
